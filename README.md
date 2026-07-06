@@ -91,7 +91,7 @@ The ESP32 publishes sensor data to Blynk virtual pins. The backend polls Blynk e
 backend.py                 # Entry point
 requirements.txt           # Python dependencies
 .env.example               # Config template (copy to .env)
-coursework_text.txt        # AI knowledge base
+knowledge_base.txt        # AI knowledge base
 
 parking_backend/
 ├── config.py              # Settings from environment

@@ -123,12 +123,3 @@ smart_parking_v2/
 - **Optional:** EasyOCR, Pillow (for ANPR)
 
 ---
-
-## Contributors
-
-- Praansu Karmacharya
-- Dikchhyant Adhikari
-- Shreyas Shrestha
-- Utkrista Humagain
-
-Islington College / London Metropolitan University — CC4003NI Fundamentals of Robotics and IoT

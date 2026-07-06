@@ -1,0 +1,15 @@
+/*
+ * ParkX — ESP32 Configuration
+ * ============================
+ * Copy this file to config.h and fill in your credentials:
+ *   cp config.h.example config.h
+ *
+ * BLYNK_AUTH_TOKEN must match the BLYNK_TOKEN in your .env file.
+ */
+
+#define BLYNK_TEMPLATE_ID   "your_template_id"
+#define BLYNK_TEMPLATE_NAME "Your Template Name"
+#define BLYNK_AUTH_TOKEN    "your_blynk_token"
+
+#define WIFI_SSID  "your_wifi_ssid"
+#define WIFI_PASS  "your_wifi_password"

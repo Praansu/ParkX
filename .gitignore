@@ -1,0 +1,39 @@
+# --- Environment ---
+.env
+smart_parking_v2/config.h
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# --- Database ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Arduino build artifacts ---
+*.elf
+*.hex
+*.bin
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# --- IDE ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

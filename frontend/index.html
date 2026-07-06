@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ParkX — Smart Parking System . CC4003NI</title>
+  
+  <!-- Fonts & icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Our own stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Nav bar -->
+  <nav>
+    <div class="nav-left">
+      <!-- Logo -->
+      <div class="logo">
+        <div class="logo-pip"></div>
+        <span>PARKX</span>
+      </div>
+      <div class="nav-sep"></div>
+      <span class="nav-meta"><i class="fa-solid fa-microchip"></i> 3-Bay IoT Parking</span>
+      <div class="nav-sep"></div>
+      
+      <!-- Tab buttons -->
+      <div class="nav-tabs">
+        <button class="ntab on" data-tab="live"><i class="fa-solid fa-house-signal"></i> Live Map</button>
+        <button class="ntab" data-tab="book"><i class="fa-solid fa-calendar-check"></i> Book Slot</button>
+        <button class="ntab" data-tab="bookings"><i class="fa-solid fa-list-check"></i> My Bookings</button>
+        <button class="ntab" data-tab="analytics"><i class="fa-solid fa-chart-line"></i> Analytics</button>
+        <button class="ntab" data-tab="alerts" id="alerts-tab-btn">
+          <i class="fa-solid fa-bell"></i> Alerts 
+          <span id="alerts-badge" class="badge hidden">0</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Right side: connection status + clock -->
+    <div class="nav-right">
+      <div class="conn-pill">
+        <div class="conn-dot" id="cdot"></div>
+        <span id="clbl">CHECKING SIGNAL</span>
+      </div>
+      <span class="nav-clock" id="clk">00:00:00</span>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main>
+    
+    <!-- Tab: Live Map -->
+    <div id="tab-live" class="section on">
+      
+      <!-- Status strip -->
+      <div class="strip">
+        <div class="strip-item">
+          <div class="si-label">Free Capacity</div>
+          <div class="si-val" id="si-free">-- / 3</div>
+        </div>
+        <div class="strip-item">
+          <div class="si-label">Gate Position</div>
+          <div class="si-val" id="si-gate">Unknown</div>
+        </div>
+        <div class="strip-item">
+          <div class="si-label">Traffic Signal</div>
+          <div class="si-val" id="si-sig">Unknown</div>
+        </div>
+        <div class="strip-item">
+          <div class="si-label">Sonar Distance</div>
+          <div class="si-val" id="si-dist">-- cm</div>
+        </div>
+        <div class="strip-item">
+          <div class="si-label">Exit IR Beam</div>
+          <div class="si-val" id="si-exit">--</div>
+        </div>
+        <div class="strip-item">
+          <div class="si-label">Uptime</div>
+          <div class="si-val" id="si-uptime">00:00:00</div>
+        </div>
+        <div class="blynk-status-wrapper">
+          <span class="chip" id="blynk-chip">Checking Blynk...</span>
+        </div>
+      </div>
+
+      <!-- Live display -->
+      <div class="live-main">
+        
+        <!-- Card: Interactive Facility Map -->
+        <div class="card map-card">
+          <div class="clabel"><i class="fa-solid fa-map-location-dot"></i> Interactive Facility Map</div>
+          
+          <!-- Road with animated gate barrier -->
+          <div class="road">
+            <div class="road-dashed-line"></div>
+            <span class="road-lbl"><i class="fa-solid fa-road"></i> ENTRY & EXIT DRIVEWAY</span>
+            <div class="barrier" id="gate">
+              <div class="barrier-base"></div>
+              <div class="barrier-post"></div>
+              <div class="barrier-lamp"></div>
+              <div class="barrier-pivot"></div>
+              <div class="barrier-boom"></div>
+              <div class="barrier-label">GATE BARRIER</div>
+            </div>
+          </div>
+          
+          <!-- 3 parking slot cards -->
+          <div class="slots-row">
+            <div class="slt free" id="slt-1">
+              <div class="slt-top">
+                <div>
+                  <div class="slt-label">Slot 1</div>
+                  <div class="slt-n">P-01</div>
+                </div>
+                <span class="chip c-green" id="schip-1">FREE</span>
+              </div>
+              <div class="slt-body">
+                <i class="fa-solid fa-car slt-icon" id="sicon-1"></i>
+                <div class="slt-state" id="sstate-1">Empty</div>
+              </div>
+              <button class="slt-btn" id="sbtn-1">Quick Reserve</button>
+            </div>
+            
+            <div class="slt free" id="slt-2">
+              <div class="slt-top">
+                <div>
+                  <div class="slt-label">Slot 2</div>
+                  <div class="slt-n">P-02</div>
+                </div>
+                <span class="chip c-green" id="schip-2">FREE</span>
+              </div>
+              <div class="slt-body">
+                <i class="fa-solid fa-car slt-icon" id="sicon-2"></i>
+                <div class="slt-state" id="sstate-2">Empty</div>
+              </div>
+              <button class="slt-btn" id="sbtn-2">Quick Reserve</button>
+            </div>
+            
+            <div class="slt free" id="slt-3">
+              <div class="slt-top">
+                <div>
+                  <div class="slt-label">Slot 3</div>
+                  <div class="slt-n">P-03</div>
+                </div>
+                <span class="chip c-green" id="schip-3">FREE</span>
+              </div>
+              <div class="slt-body">
+                <i class="fa-solid fa-car slt-icon" id="sicon-3"></i>
+                <div class="slt-state" id="sstate-3">Empty</div>
+              </div>
+              <button class="slt-btn" id="sbtn-3">Quick Reserve</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Traffic Light Visualizer -->
+        <div class="card tl-card">
+          <div class="clabel"><i class="fa-solid fa-traffic-light"></i> Entry Signal</div>
+          <div class="tl-housing">
+            <div class="tl-bulb tl-r off" id="tl-r"></div>
+            <div class="tl-bulb tl-a off" id="tl-a"></div>
+            <div class="tl-bulb tl-g off" id="tl-g"></div>
+          </div>
+          <div class="tl-text" id="tl-txt">Stop</div>
+          <span class="chip c-red" id="tl-chip">No Entry</span>
+        </div>
+      </div>
+
+      <!-- Sim controls + log -->
+      <div class="g2">
+        <div class="card">
+          <div class="clabel"><i class="fa-solid fa-gamepad"></i> Hardware Simulation Controls</div>
+          <p class="card-desc">Simulate physical hardware events locally without a connected ESP32 unit.</p>
+          <div class="sim-row">
+            <button class="btn btn-ghost btn-sm" id="btn-sim-entry"><i class="fa-solid fa-circle-arrow-right"></i> Vehicle Entry</button>
+            <button class="btn btn-ghost btn-sm" id="btn-sim-exit"><i class="fa-solid fa-circle-arrow-left"></i> Vehicle Exit</button>
+            <button class="btn btn-ghost btn-sm" id="btn-sim-full"><i class="fa-solid fa-square-parking"></i> Fill All</button>
+            <button class="btn btn-ghost btn-sm" id="btn-sim-reset"><i class="fa-solid fa-rotate-left"></i> Full Reset</button>
+            
+            <!-- Hidden file input for ANPR photo upload -->
+            <input type="file" id="anpr-file-input" accept="image/*" style="display:none">
+            <button class="btn btn-ghost btn-sm btn-anpr" id="btn-sim-anpr" title="Upload a number plate photo for EasyOCR or scan Nepali license plate">
+              <i class="fa-solid fa-camera-retro"></i> AI ANPR Camera Scan
+            </button>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header-flex">
+            <div class="clabel"><i class="fa-solid fa-receipt"></i> System Events Log</div>
+            <button class="btn btn-ghost btn-xs" id="btn-clear-log">Clear</button>
+          </div>
+          <div class="log-box" id="logbox"></div>
+        </div>
+      </div>
+
+      <!-- LCD emulator -->
+      <div class="lcd-wrap">
+        <div class="lcd-header">
+          <span class="lcd-hw"><i class="fa-solid fa-microchip"></i> LiquidCrystal_I2C LCD Display Emulator (Address 0x27)</span>
+          <div class="lcd-pwr" id="lcd-pwr"></div>
+        </div>
+        <div class="lcd-screen">
+          <div class="lcd-rows" id="lcd-rows">
+            <!-- Rows filled by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Book Slot -->
+    <div id="tab-book" class="section">
+      <div class="sec-head">
+        <div class="sec-title"><i class="fa-solid fa-calendar-plus"></i> Reserve a Parking Bay</div>
+        <div class="sec-sub">Secure your parking slot persistently. Linked to Blynk V6/V7/V8.</div>
+      </div>
+      
+      <div class="book-layout">
+        <!-- Booking form -->
+        <div class="book-form-area">
+          
+          <!-- Step 1: Choose a slot -->
+          <div class="card">
+            <div class="clabel"><span class="step-num">1</span> Select a Parking Slot</div>
+            <div class="slot-picker" id="slot-picker">
+              <div class="sp-item sel" data-s="1">
+                <div class="sp-num">01</div>
+                <div class="sp-info">
+                  <div class="sp-name">Slot 01 - Entrance Bay</div>
+                  <div class="sp-sub">IR Sensor Pin: GPIO 25</div>
+                </div>
+                <span class="chip c-green" id="bbadge-1">Available</span>
+              </div>
+              <div class="sp-item" data-s="2">
+                <div class="sp-num">02</div>
+                <div class="sp-info">
+                  <div class="sp-name">Slot 02 - Central Bay</div>
+                  <div class="sp-sub">IR Sensor Pin: GPIO 33</div>
+                </div>
+                <span class="chip c-green" id="bbadge-2">Available</span>
+              </div>
+              <div class="sp-item" data-s="3">
+                <div class="sp-num">03</div>
+                <div class="sp-info">
+                  <div class="sp-name">Slot 03 - Exit Bay</div>
+                  <div class="sp-sub">IR Sensor Pin: GPIO 32</div>
+                </div>
+                <span class="chip c-green" id="bbadge-3">Available</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 2: Pick date and time -->
+          <div class="card">
+            <div class="clabel"><span class="step-num">2</span> Date & Time Window</div>
+            <div class="g2" style="margin-bottom:14px">
+              <div class="form-group">
+                <label class="flabel">Reservation Date</label>
+                <input type="date" class="finput" id="bdate">
+              </div>
+              <div class="form-group">
+                <label class="flabel">Parking Duration</label>
+                <select class="finput" id="bdur">
+                  <option value="1">1 Hour - NPR 50</option>
+                  <option value="2">2 Hours - NPR 90</option>
+                  <option value="3">3 Hours - NPR 130</option>
+                  <option value="4">4 Hours - NPR 160</option>
+                  <option value="8">Full Day (8h) - NPR 280</option>
+                </select>
+              </div>
+            </div>
+            <label class="flabel">Select Arrival Hour</label>
+            <div class="time-grid" id="tgrid">
+              <!-- Filled by JavaScript -->
+            </div>
+          </div>
+          
+          <!-- Step 3: Driver & vehicle info -->
+          <div class="card">
+            <div class="clabel"><span class="step-num">3</span> Driver & Vehicle Information</div>
+            <div class="g2" style="margin-bottom:12px">
+              <div class="form-group">
+                <label class="flabel">Driver Name</label>
+                <input type="text" class="finput" id="bname" placeholder="Praansu Karmacharya">
+              </div>
+              <div class="form-group">
+                <label class="flabel">Contact Phone</label>
+                <input type="tel" class="finput" id="bphone" placeholder="+977 98XXXXXXXX">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="flabel">Nepal License Plate Number</label>
+              <div class="anpr-input-wrap">
+                <input type="text" class="finput" id="bplate" placeholder="BA 1 PA 1234">
+                <button class="btn btn-ghost btn-sm" id="btn-anpr-fill" title="Scan with camera for license plate recognition"><i class="fa-solid fa-camera"></i> Scan</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Summary panel -->
+        <div class="summary-card">
+          <div class="clabel">Reservation Summary</div>
+          <div class="sum-row">
+            <span class="sum-key">Selected Slot</span>
+            <span class="sum-val" id="sum-slot">Slot 01</span>
+          </div>
+          <div class="sum-row">
+            <span class="sum-key">Reservation Date</span>
+            <span class="sum-val" id="sum-date">--</span>
+          </div>
+          <div class="sum-row">
+            <span class="sum-key">Arrival Time</span>
+            <span class="sum-val" id="sum-time">--</span>
+          </div>
+          <div class="sum-row">
+            <span class="sum-key">Duration</span>
+            <span class="sum-val" id="sum-dur">1 hr</span>
+          </div>
+          <div class="sum-row">
+            <span class="sum-key">Driver Name</span>
+            <span class="sum-val" id="sum-name">--</span>
+          </div>
+          <div class="sum-row">
+            <span class="sum-key">License Plate</span>
+            <span class="sum-val" id="sum-plate">--</span>
+          </div>
+          <div class="price-row">
+            <span class="price-lbl">Total Rate</span>
+            <span class="price-val" id="sum-price">NPR 50</span>
+          </div>
+          <div class="div-line"></div>
+          <p class="summary-note"><i class="fa-solid fa-circle-info"></i> Gate barrier parses the license plate at entrance to open the boom arm automatically.</p>
+          <button class="btn btn-primary btn-full" id="btn-confirm-book">Submit Reservation</button>
+          <button class="btn btn-ghost btn-full" style="margin-top:8px" id="btn-clear-form">Clear Fields</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: My Bookings -->
+    <div id="tab-bookings" class="section">
+      <div class="card-header-flex">
+        <div class="sec-head">
+          <div class="sec-title"><i class="fa-solid fa-book-open"></i> Live Booking Directory</div>
+          <div class="sec-sub">Real-time database entries synchronized with Blynk cloud virtual pins V6-V8.</div>
+        </div>
+        <button class="btn btn-ghost" id="btn-refresh-bookings"><i class="fa-solid fa-arrows-rotate"></i> Refresh DB</button>
+      </div>
+      
+      <div class="card">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Booking ID</th>
+                <th>Parking Slot</th>
+                <th>Booking Date</th>
+                <th>Arrival Time</th>
+                <th>Duration</th>
+                <th>License Plate</th>
+                <th>Driver Name</th>
+                <th>Bill (NPR)</th>
+                <th>Status</th>
+                <th>Control Actions</th>
+              </tr>
+            </thead>
+            <tbody id="btbody">
+              <!-- Filled by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Analytics -->
+    <div id="tab-analytics" class="section">
+      <div class="sec-head">
+        <div class="sec-title"><i class="fa-solid fa-square-poll-vertical"></i> Advanced Occupancy Analytics</div>
+        <div class="sec-sub">SQLite dataset statistics . Kathmandu facility peak analysis.</div>
+      </div>
+      
+      <!-- Key metrics grid -->
+      <div class="g4">
+        <div class="card card-sm">
+          <div class="clabel">Total Visits (7 Days)</div>
+          <div id="stat-visits" class="metric-val">--</div>
+          <div id="stat-visits-sub" class="metric-sub">No events</div>
+        </div>
+        <div class="card card-sm">
+          <div class="clabel">Today's Entry Counts</div>
+          <div id="stat-today" class="metric-val">--</div>
+          <div class="metric-sub">Physical entry events</div>
+        </div>
+        <div class="card card-sm">
+          <div class="clabel">Slot 1 Utilization</div>
+          <div id="stat-s1" class="metric-val">--%</div>
+          <div class="metric-sub">GPIO 25 occupation</div>
+        </div>
+        <div class="card card-sm">
+          <div class="clabel">Total Events Logged</div>
+          <div id="stat-total" class="metric-val">--</div>
+          <div class="metric-sub">SQLite table record count</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="g2">
+        <div class="card chart-card">
+          <div class="clabel"><i class="fa-solid fa-chart-area"></i> Hourly Occupancy Rate (Today)</div>
+          <div class="chart-container">
+            <canvas id="chart-hourly-canvas"></canvas>
+          </div>
+        </div>
+        <div class="card chart-card">
+          <div class="clabel"><i class="fa-solid fa-chart-bar"></i> Daily Vehicle Entries (Last 7 Days)</div>
+          <div class="chart-container">
+            <canvas id="chart-daily-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Per-slot utilization bars -->
+      <div class="card">
+        <div class="clabel"><i class="fa-solid fa-gauge-high"></i> Per-Bay Historical Occupancy Utilization</div>
+        <div class="g3 progress-grid">
+          <div class="progress-bar-wrap">
+            <div class="progress-header">
+              <span>Slot 1 (GPIO 25)</span>
+              <span id="util-pct-1" class="util-val">--</span>
+            </div>
+            <div class="util-bar">
+              <div class="util-fill" id="util-fill-1" style="width: 0%;"></div>
+            </div>
+          </div>
+          
+          <div class="progress-bar-wrap">
+            <div class="progress-header">
+              <span>Slot 2 (GPIO 33)</span>
+              <span id="util-pct-2" class="util-val">--</span>
+            </div>
+            <div class="util-bar">
+              <div class="util-fill" id="util-fill-2" style="width: 0%;"></div>
+            </div>
+          </div>
+          
+          <div class="progress-bar-wrap">
+            <div class="progress-header">
+              <span>Slot 3 (GPIO 32)</span>
+              <span id="util-pct-3" class="util-val">--</span>
+            </div>
+            <div class="util-bar">
+              <div class="util-fill" id="util-fill-3" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+        <p id="util-note" class="summary-note" style="margin-top: 14px;"></p>
+      </div>
+
+      <!-- AI Prediction chart -->
+      <div class="card chart-card">
+        <div class="card-header-flex">
+          <div class="clabel"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Predicted Facility Occupancy (Next 5 Hours)</div>
+          <span id="predict-badge" class="chip c-mute">Gathering logs</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-predict-canvas"></canvas>
+        </div>
+        <p id="predict-note" class="summary-note" style="margin-top:10px;"></p>
+      </div>
+    </div>
+
+    <!-- Tab: Alerts -->
+    <div id="tab-alerts" class="section">
+      <div class="card-header-flex">
+        <div class="sec-head">
+          <div class="sec-title"><i class="fa-sharp fa-solid fa-triangle-exclamation"></i> Smart Anomaly Alerts</div>
+          <div class="sec-sub" id="alerts-sub">Continuous background checks. Instant Gmail notification logs.</div>
+        </div>
+        <button class="btn btn-ghost" id="btn-refresh-alerts"><i class="fa-solid fa-rotate"></i> Refresh Alerts</button>
+      </div>
+
+      <!-- Alert stats -->
+      <div class="g3">
+        <div class="card card-sm">
+          <div class="clabel">Active Warnings</div>
+          <div id="alert-active" class="metric-val" style="color:var(--red)">0</div>
+          <div class="metric-sub text-red">Awaiting inspection</div>
+        </div>
+        <div class="card card-sm">
+          <div class="clabel">Total Alerts Logged</div>
+          <div id="alert-total" class="metric-val">--</div>
+          <div class="metric-sub">All-time count in database</div>
+        </div>
+        <div class="card card-sm">
+          <div class="clabel">Gmail Notification Hub</div>
+          <div id="alert-email-status" class="metric-val" style="font-size:13px; font-weight:600; margin-top:4px;">Not Configured</div>
+          <div class="metric-sub">Alert notification recipient</div>
+        </div>
+      </div>
+
+      <!-- Alert threshold limits -->
+      <div class="card alert-limits-card">
+        <div class="clabel"><i class="fa-solid fa-sliders"></i> Anomaly Alert Policies</div>
+        <div class="limits-grid">
+          <div class="limit-box">
+            <span class="limit-title">Unpaid Parking Stay Overstay</span>
+            <span class="limit-val" id="thr-slot">-- hours</span>
+          </div>
+          <div class="limit-box">
+            <span class="limit-title">Facility Peak Capacity Overstay</span>
+            <span class="limit-val" id="thr-full">-- mins</span>
+          </div>
+          <div class="limit-box">
+            <span class="limit-title">ESP32 Offline Timeout</span>
+            <span class="limit-val" id="thr-offline">-- mins</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alert log table -->
+      <div class="card">
+        <div class="clabel"><i class="fa-solid fa-history"></i> Recent Anomalies History</div>
+        <div id="alerts-loading" class="alerts-state-text">Querying log files...</div>
+        <div class="tbl-wrap" id="alerts-table-wrap" style="display:none">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Anomaly Type</th>
+                <th>Severity</th>
+                <th>Diagnostic Alert Message</th>
+                <th>Email Pushed</th>
+              </tr>
+            </thead>
+            <tbody id="alerts-tbody">
+              <!-- Filled by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+        <div id="alerts-empty" class="alerts-state-text" style="display:none">
+          No anomalies detected. The system is operating securely!
+        </div>
+        <div id="alerts-offline" class="alerts-state-text text-red" style="display:none">
+          <i class="fa-solid fa-circle-exclamation"></i> Could not connect to the backend server. Alerts are inactive.
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Booking confirmation modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-title">Confirm Reservation Details</div>
+      <div class="modal-sub">Verify your client and vehicle information before booking</div>
+      <div class="modal-divider"></div>
+      <div id="modal-body">
+        <!-- Filled by JavaScript -->
+      </div>
+      <div class="modal-divider"></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="btn-modal-confirm">Confirm & Register</button>
+        <button class="btn btn-ghost" id="btn-modal-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast + offline notice -->
+  <div id="toast"></div>
+  <div class="offline-notice" id="offnotice">
+    <i class="fa-solid fa-triangle-exclamation"></i> Blynk Connection Dropped. Attempting ESP32 handshake...
+  </div>
+
+  <!-- AI Chatbot -->
+  <button id="cb-toggle"><i class="fa-solid fa-comments"></i> AI Assistant</button>
+  <div id="chatbot">
+    <div class="cb-header">
+      <div class="cb-title">
+        <div class="logo-pip animate"></div>
+        <span>AI PARKING ASSISTANT</span>
+      </div>
+      <button class="cb-close" id="btn-chat-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="cb-body" id="cb-body">
+      <div class="cb-msg bot">
+        Hey there! I'm ParkX AI, your parking assistant. I can book slots for you, check live status, list or cancel bookings — whatever you need. Try saying "book slot 2 for tomorrow at 2pm" or "is slot 1 free right now?"
+      </div>
+    </div>
+    <div class="cb-input-area">
+      <input type="text" class="cb-input" id="cb-input" placeholder="Ask AI Assistant to book/cancel slots...">
+      <button class="btn btn-primary btn-chat-send" id="btn-chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- Our JavaScript file -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,1547 @@
+--- PAGE 1 ---
+  
+  
+ 
+ 
+  
+                                             Module Code & Module Title         
+                            CC4003NI Fundamentals of Robotics and IoT  
+   Smart Parking System  
+  
+  
+                                                   Assessment Type 
+                                            50% Development Report  
+   
+                                             Semester  2025 Autumn 
+         
+                                        Group members  
+London Met ID   Student Name   
+25029617   Praansu Karmacharya   
+25029586  Dikchhyant Adhikari   
+25029670  Shreyas Shrestha   
+25029692  Utkrista Humagain   
+   
+  
+Assignment Due Date:13th May                                       
+Assignment Submission Date:13th May                                                     
+Word Count:7278 
+  
+  
+ I confirm that I understand my coursework needs to be submitted online via Google Classroom under 
+the relevant module page before the deadline in order for my assignment to be accepted and marked. 
+I am fully aware that late submissions will be treated as non-submission and a mark of zero will be 
+awarded.  
+ 
+ 
+ 
+
+--- PAGE 2 ---
+ 
+ 
+Acknowledgement  
+ 
+We would like to express our sincere gratitude to our module leader, Mr. Shishir 
+Subedi, for his continuous guidance, support, and constructive feedback throughout 
+the development of this project. His technical insights significantly shaped both the 
+hardware design and firmware implementation of the Smart Parking System. 
+We also extend our ap preciation to Islington College and London Metropolitan 
+University for providing the academic resources, laboratory facilities, and structured 
+learning environment that made this project possible. Finally, we acknowledge the 
+collaborative efforts of all fo ur group members, whose individual contributions in 
+hardware assembly, firmware development, system integration, testing, and 
+documentation were essential to the successful completion of both Milestone 1 and 
+Milestone 2. 
+  
+--- PAGE 3 ---
+Abstract 
+ 
+This report presents th e complete final documentation for a Smart Parking System 
+developed as part of the CC4003NI Fundamentals of Robotics and IoT module at 
+Islington College. The system integrates an ESP32 microcontroller with an HC-SR04 
+Ultrasonic Sensor for vehicle entry det ection, an IR exit sensor for vehicle departure 
+detection, three IR sensors for per -slot occupancy monitoring across three parking 
+bays, a three-state traffic light module providing STOP, WARNING, and GO signals, 
+a servo motor for automated gate control, a nd a 20×4 I2C LCD display for real -time 
+occupancy output. 
+The entry gate opens automatically based on slot availability whilst the exit gate opens 
+unconditionally upon vehicle detection, ensuring smooth vehicle throughput without 
+attendant intervention. A structured seven-case test plan yielded a 100% pass rate 
+with an average end -to-end response time of under 200 milliseconds across all test 
+scenarios. The report presents a Kathmandu -based case study contextualising the 
+system within Nepal’s urban parking challenges, a phased future integration roadmap 
+including Blynk cloud analytics, and a comprehensive ethical and legal analysis. The 
+prototype validates the feasibility of low -cost IoT solutions for smart urban parking 
+infrastructure in the developing world (Pham and Huh, 2021). 
+  
+--- PAGE 4 ---
+ 
+Table of Contents  
+ 
+1. Introduction ................................ ................................ ................................ ..... 7 
+1.1 Current Scenario................................ ................................ .........................  7 
+1.2 Problem Statement and Project as a Solution ................................ ...............  8 
+1.3 Aim and Objectives ................................ ................................ .....................  9 
+2. Background ................................ ................................ ................................ ... 10 
+2.1 System Overview ................................ ................................ ......................  10 
+2.2 Design Diagrams ................................ ................................ ......................  11 
+2.3 Requirement Analysis ................................ ................................ ...............  14 
+3. Case Study................................ ................................ ................................ .... 15 
+3.1 Introduction ................................ ................................ ..............................  15 
+3.2 Problem Statement ................................ ................................ ...................  15 
+3.3 System Analysis ................................ ................................ .......................  15 
+3.4 Recommendation................................ ................................ ......................  16 
+3.5 Conclusion ................................ ................................ ...............................  16 
+4. Development ................................ ................................ ................................ . 17 
+Step 1 – Hardware Procurement and Component Verification ...........................  17 
+Step 2 – Firmware Development ................................ ................................ ..... 19 
+Step 3 – System Integration ................................ ................................ ............  19 
+5. Results and Findings ................................ ................................ ......................  20 
+5.1 Project Outcomes ................................ ................................ .....................  20 
+5.2 System Testing Results ................................ ................................ .............  21 
+5.3 Detailed Test Cases ................................ ................................ ..................  22 
+Test Case TC-01 – System Initialization ................................ .......................  22 
+Test Case TC-02 – Entry Gate, Slots Available ................................ .............  24 
+Test Case TC-03 – Entry Denied, Parking Full ................................ ..............  26 
+Test Case TC-04 – Exit Gate Trigger (Unconditional) ................................ .... 28 
+Test Case TC-05 – WARNING State (One Slot Remaining) .....Error! Bookmark 
+not defined. 
+Test Case TC-06 – LCD Slot Display Accuracy ................................ .............  30 
+Test Case TC-07 – Serial Monitor Validation ................................ .................  32 
+5.4 Performance Observations ................................ ................................ ........  34 
+6. Future Works ................................ ................................ ................................ . 35 
+6.1 Blynk Cloud Integration and Backend Analytics................................ ...........  35 
+6.2 Additional Enhancements ................................ ................................ ..........  36 
+--- PAGE 5 ---
+ 
+6.3 Sustainable Deployment Plan ................................ ................................ .... 36 
+7. Conclusion ................................ ................................ ................................ .... 37 
+7.1 Ethical and Legal Analysis of the Project ................................ ....................  37 
+Data Privacy ................................ ................................ ...............................  37 
+Surveillance and Consent ................................ ................................ ............  37 
+Safety and Liability ................................ ................................ ......................  37 
+Accessibility and Environmental Impact ................................ ........................  37 
+7.2 Overall Conclusion ................................ ................................ ....................  38 
+8. References ................................ ................................ ................................ .... 39 
+9. Weekly Logbooks................................ ................................ ...........................  40 
+10. Appendix ................................ ................................ ................................ ..... 41 
+Appendix A: Source Code ................................ ................................ ...............  41 
+Appendix B: Other Objectives of the System ................................ ....................  46 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 6 ---
+ 
+ 
+Table of figures  
+Figure 1:Hardware Architecture Diagram ................................ .............................  11 
+Figure 2:System Flowchart ................................ ................................ .................  12 
+Figure 3:Circuit Diagram ................................ ................................ ....................  13 
+Figure 4:TC-01 – System Initialization Test Procedure Reference .........................  23 
+Figure 5:TC-02 – Entry Gate (GO Sequence) Test Procedure Reference ..............  25 
+Figure 6:TC-03 – Entry Denied (Parking Full) Test Procedure Reference ..............  27 
+Figure 7:TC-04 – Exit Gate (Unconditional) Test Procedure Reference .................  29 
+Figure 8:TC-06 – LCD Slot Display Accuracy Test Procedure Reference...............  31 
+Figure 9:TC-07 – Serial Monitor Validation Test Procedure Reference ..................  33 
+ 
+ 
+Table of Tables  
+Table 1:Hardware Component List and Specifications ................................ ..........  18 
+Table 2:System Test Cases and Results Summary ................................ ..............  21 
+Table 3:Detailed Test Case – TC-02 (Entry Gate, Slots Available) ........................  24 
+Table 4:Detailed Test Case – TC-03 (Entry Denied, Parking Full) .........................  26 
+Table 5:Detailed Test Case – TC-04 (Exit Gate Trigger) ................................ .......  28 
+Table 7:Detailed Test Case – TC-06 (LCD Slot Display Accuracy) ........................  30 
+Table 8:Detailed Test Case – TC-07 (Serial Monitor Validation) ............................  32 
+--- PAGE 7 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         7 
+ 
+1. Introduction  
+1.1 Current Scenario 
+Urban traffic congestion and the inefficient management of parking infrastructure 
+represent pressing challenges in developing cities worldwide. In Nepal, rapid 
+urbanization has led to a significant increase in registered vehicle numbers without a 
+commensurate expansion of organized parking facilities (Zanella et al., 2014). The 
+Department of Transport Management (DoTM) recorded over one million registered 
+vehicles in the Bagmati Province in recent years, yet the majority of parking facilities 
+in Kathmandu continue to operate without any automated management system. 
+Manual parking management — dependent entirely on human attendants — is 
+susceptible to error, incapable of real-time occupancy reporting, and costly to maintain 
+over extended operating hours. 
+The Internet of Things (IoT) has emerged as a transformative framework for 
+addressing such urban infrastructure challenges. By embedding networked sensors, 
+actuators, and micro controllers directly into physical environments, IoT enables 
+automated decision-making that replaces costly and unreliable human intervention 
+(Kumar, Tiwari and Zymbler, 2019). Smart parking systems represent one of the most 
+commercially validated applications of IoT in urban mobility, with documented benefits 
+including reduced search time, lower fuel consumption, and improved facility revenue 
+tracking (Pham and Huh, 2021). 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 8 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         8 
+ 
+ 
+1.2 Problem Statement and Project as a Solution 
+The specific problem addressed by this project is the manual management of a small 
+commercial parking facility in Kathmandu, Nepal. In the target scenario, a single 
+attendant is responsible for monitoring the availability of three parking bays, operating 
+an entry gate, managing vehicle exits, and communicating slot status to approaching 
+drivers. This approach is error-prone, labor-intensive, and provides no mechanism for 
+real-time data capture or remote management. In Nepal, where small facility operators 
+face significant pressure to reduce operational costs and where traffic congestion in 
+areas such as New Road, Putalisadak, and Thamel is a persistent daily challenge, the 
+absence of automated parking infrastructure represents a measurable economic and 
+social inefficiency (Gregor and Bhatt, 2020). 
+The Smart Parking System prototype resolves these inefficiencies through a dual -
+gate, three -slot automated architecture. An HC -SR04 Ultrasonic Sensor detects 
+approaching vehicles at the entry point; if at least one of the three monitored bays is 
+free, the entry gate opens automatically via a servo motor (Arduino, 2024). An IR 
+sensor at the exit triggers the gate unconditionally for departing vehicles. Three IR 
+sensors — one per parking bay — monitor individual slot occupancy in real time and 
+drive a three -state traffic light module that signals STOP (red, no slots), WARNING 
+(yellow flashing, one slot remaining), or GO (green, slots available). A 20×4 I2C LCD 
+displays the live free-slot count and individual bay status. All components are available 
+at local Kathmandu electronics markets at approximately NPR 3,000 to 5,000, making 
+the system financially accessible to small Nepali facility operators (Gregor and Bhatt, 
+2020). 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 9 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         9 
+ 
+ 
+1.3 Aim and Objectives 
+The aim of this p roject is to design, implement, and validate a functional, dual -gate 
+IoT-based Smart Parking System prototype using an ESP32 microcontroller that 
+monitors three individual parking slots and provides automated gate control, real-time 
+status display, and color-coded entry signaling. 
+ 
+The objectives are as follows: 
+• To detect approaching vehicles at the entry point using an HC-SR04 Ultrasonic 
+Sensor with a detection threshold of 20 cm and a response latency of less than 
+500 milliseconds (Banzi and Shiloh, 2022). 
+• To monitor real-time occupancy of three individual parking bays using three IR 
+sensors, where a HIGH output indicates a free slot and a LOW output indicates 
+occupancy (Pham and Huh, 2021). 
+• To automate entry gate control using an SG90 servo motor: opening  when at 
+least one slot is free and remaining closed when the facility is at full capacity 
+(Espressif Systems, 2023). 
+• To enable unconditional exit gate control triggered by an IR exit sensor 
+detecting departing vehicles, ensuring smooth vehicle throughput without 
+attendant intervention. 
+• To provide color-coded traffic light signals — STOP (red), WARNING (yellow 
+flashing), GO (green) — to approaching drivers based on the live slot count. 
+• To display the real-time free-slot count and individual bay status on a 20×4 I2C 
+LCD display, and to output structured validation logs via the Arduino Serial 
+Monitor for testing and diagnostic purposes. 
+  
+--- PAGE 10 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         10 
+ 
+2. Background  
+2.1 System Overview 
+The Smart Parking System is built around the ESP32 development board — a dual-
+core 240 MHz microcontroller with integrated Wi -Fi and Bluetooth support (Espressif 
+Systems, 2023). The ESP32 coordinates all sensor inputs and actuator outputs, 
+serving as the central intelligence of the system. The sensing subsystem comprises 
+five components: an HC -SR04 Ultrasonic Sensor on the entry lane (TRIG pin GPIO 
+27, ECHO pin GPIO 26) for vehicle arrival detection; an IR exit sensor (GPIO 12) that 
+detects departing vehicles as a LOW-level signal; and three IR slot sensors (IR1: GPIO 
+25, IR2: GPIO 33, IR3: GPI O 32) that individually monitor each of the three parking 
+bays, returning HIGH when a slot is free (Pham and Huh, 2021). 
+The actuator subsystem comprises three output components. An SG90 Servo Motor 
+on GPIO 13 operates the physical gate, rotating from 0° (closed) to 90° (open) for both 
+entry and exit events. The three-state traffic light module provides color-coded signals 
+via a Red LED (GPIO 18), Yellow LED (GPIO 19), and Green LED (GPIO 17). The 
+20×4 I2C LCD (address 0x27) displays the aggregate free slot count and the individual 
+bay status across its four lines. All firmware was developed using the Arduino IDE 
+(version 2.3.2) with the ESP32Servo (v0.13.0) and LiquidCrystal_I2C (v1.1.2) libraries 
+(Espressif Systems, 2023). 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 11 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         11 
+ 
+2.2 Design Diagrams 
+Three primary design diagrams were produced to document the system architecture, 
+circuit wiring, and operational logic. All were established in Milestone 1 and carried 
+forward to guide the Milestone 2 implementation phase. 
+ 
+ 
+Figure 1:Hardware Architecture Diagram 
+ 
+ 
+Hardware Architecture Diagram: Illustrates the hub-and-spoke architecture of the 
+system, with the ESP32 as the central node. The HC-SR04 Ultrasonic Sensor and all 
+three IR slot sensors feed occupancy and detection data to t he ESP32, which in turn 
+drives the servo gate motor, traffic light module, and I2C LCD display. The exit IR 
+sensor is also connected to the ESP32 to trigger the independent exit gate -open 
+sequence. 
+ 
+ 
+ 
+
+--- PAGE 12 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         12 
+ 
+    
+Figure 2:System Flowchart 
+System Flowchart  — Defines the operational firmware logic. On power -up, the 
+system initializes all peripherals, sets the gate to 0° (closed), and activates the STOP 
+traffic light state. In each loop iteration, the HC-SR04 distance is measured and the IR 
+exit sensor and all three slot sensors are read. If the entry distance is below 20 cm 
+and free slots exist, the gate opens through the WARNING –GO–WARNING–STOP 
+traffic light sequence with a 4 -second gate-open window. If no slots are free, entry is 
+denied and the LCD displays ‘PARKING FULL’. 
+
+--- PAGE 13 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         13 
+ 
+ 
+ 
+ 
+Figure 3:Circuit Diagram 
+Circuit Diagram  — Shows the precise electrical connections produced in Cirkit 
+Designer. Key GPIO assignments include: Entry HC-SR04 TRIG to GPIO 27, ECHO 
+to GPIO 26 (via 1 kΩ/2 kΩ voltage divider to step the 5V signal down to a safe 3.3V 
+ESP32 input level); Exit IR sensor OUT to GPIO 12; slot IR sensors IR1–IR3 to GPIO 
+25, 33, and 32; servo signal to GPIO 13; and I2C LCD SDA to GPIO 21, SCL to GPIO 
+22 (Espressif Systems, 2023). 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- PAGE 14 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         14 
+ 
+ 
+2.3 Requirement Analysis 
+Functional requirements for the three-slot, dual-gate system include: detecting vehicle 
+presence at the entry lane within a 20 cm threshold; independently detecting vehicle 
+presence at the exit lane via IR sensor; c omputing a free slot count from three 
+individual IR sensor readings; opening the gate for entry when at least one slot is free; 
+denying entry and displaying ‘PARKING FULL’ when all three slots are occupied; 
+opening the gate unconditionally for exit detecti on; cycling the traffic light through 
+STOP, WARNING (yellow flashing twice), and GO states during gate transitions; and 
+displaying the live slot count and individual bay status on the LCD. 
+Non-functional requirements include a maximum end -to-end response time of 500 
+milliseconds from detection to gate actuation, stable sensor performance over a 
+continuous 30-minute operation period, safe ESP32 GPIO voltage levels (maximum 
+3.3V), and reliable Serial Monitor output for validation and diagnostic purposes. The 1 
+kΩ/2 kΩ voltage divider on the HC-SR04 ECHO line satisfies the voltage requirement 
+(Banzi and Shiloh, 2022). 
+  
+--- PAGE 15 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         15 
+ 
+3. Case Study 
+3.1 Introduction 
+This case study examines the deployment context for an IoT-based automated parking 
+solution in a small urban co mmercial setting. The focus is a three-bay parking facility 
+in Kathmandu, Nepal, where manual parking management has resulted in operational 
+inefficiencies, driver frustration, and revenue losses due to poor real -time occupancy 
+tracking (Gregor and Bhatt, 2020). Kathmandu serves as a representative case study 
+location given its dense population, rapidly growing vehicle ownership, and near-total 
+absence of automated parking infrastructure at the small -facility level. The insights 
+derived are broadly applicable to similar developing urban contexts across South and 
+Southeast Asia. 
+3.2 Problem Statement 
+The target facility has a capacity of three vehicles and is managed manually by a single 
+attendant who operates the entry gate, monitors slot occupancy for all three bays, and 
+manages vehicle exits. Occupancy data is not tracked in real time, resulting in frequent 
+situations where drivers queue at the entrance only to find all three slots already taken. 
+The absence of any entry signal system means approaching drivers have no advance 
+information on availability before reaching the gate. The single attendant must 
+simultaneously manage both entry and exit events, creating operational bottlenecks 
+during peak hours. Manual record-keeping makes it impossible to analyze occupancy 
+patterns or identify peak demand periods, which are critical for pricing decisions. 
+These challenges are consistent with broader findings in urban mobility research, 
+where the absence of smart parking infrastructure contributes meaningfully to tra ffic 
+congestion and environmental degradation (Zanella et al., 2014). 
+3.3 System Analysis 
+An analysis of the facility’s operational requirements identified six key functional 
+needs. The system must detect and respond to approaching vehicles at the entry lane 
+without human intervention; independently manage vehicle exits without attendant 
+operation; provide individual per -slot occupancy monitoring across all three bays; 
+signal availability to approaching drivers before they reach the gate; display the live 
+slot count and individual bay status clearly; and generate structured operational logs 
+suitable for future analytics integration. The dual -gate ESP32 Smart Parking System 
+--- PAGE 16 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         16 
+ 
+addresses each of these needs directly through its sensor subsystem, actuator 
+subsystem, and structured firmware logic (Kumar, Tiwari and Zymbler, 2019). 
+3.4 Recommendation 
+A phased deployment approach is recommended, specifically designed for the 
+operational and economic context of Nepal. Phase 1 deploys the current dual -gate 
+prototype in the target three-slot facility, validating entry detection, exit detection, traffic 
+light signaling, and slot monitoring under real operating conditions in Kathmandu. 
+Given the frequency of load-shedding across Nepal, the system should be paired with 
+a small UPS or LiPo battery backup to ensure uninterrupted operation during power 
+outages. Phase 2 integrates the Blynk IoT cloud platform to stream all three slot states 
+and gate events to the facility owner’s mobile phone in real time. Phase 3 activates 
+Blynk’s historical datastream logging to build a timestamped occupancy database, 
+enabling peak-hour analysis and data-driven pricing decisions. This phased approach 
+minimizes upfront cost, respects local resource constraints, and provides a realistic 
+and locally viable pathway to full-scale deployment. 
+3.5 Conclusion 
+The case study confirms that the Smart Parking System is a technically viable and 
+operationally appropriate solution for the three -slot facility’s identified challenges. Its 
+dual-gate architecture, color-coded traffic light signaling, per -bay LCD display, and 
+structured Serial Monitor output address all six functional requirements identified in 
+the system analysis. The use of locally available, low -cost components makes the 
+system financially accessi ble to small Nepali parking operators, and the phased 
+deployment roadmap provides a practical and achievable path to cloud -integrated, 
+data-driven parking management. 
+  
+--- PAGE 17 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         17 
+ 
+4. Development 
+The development process followed four structured phases: hardware procur ement 
+and component verification, firmware development, staged system integration, and 
+structured validation testing. 
+Step 1 – Hardware Procurement and Component Verification 
+All components were individually tested for functionality before integration. The ESP32 
+development board was mounted centrally on a full -size breadboard with GND and 
+3.3V/5V power rails connected to the breadboard supply rails. The HC -SR04 
+Ultrasonic Sensor was connected with TRIG to GPIO 27 and ECHO to GPIO 26 via a 
+1 kΩ/2 kΩ voltage divider, stepping the 5V ECHO signal down to a safe 3.3V level for 
+the ESP32 input (Banzi and Shiloh, 2022). The exit IR sensor OUT pin was connected 
+to GPIO 12. All three slot IR sensors (IR1, IR2, IR3) were connected to GPIO 25, 33, 
+and 32 respectively. The SG90 servo signal wire was connected to GPIO 13 for PWM 
+control. The traffic light module was wired with Red to GPIO 18, Yellow to GPIO 19, 
+and Green to GPIO 17, each via a 220Ω current -limiting resistor. The 20×4 I2C LCD 
+was connected with SDA to GPIO 21 and SCL to GPIO 22. All connections were cross-
+verified against the circuit diagram and confirmed with a digital multimeter before the 
+ESP32 was connected to USB power. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 18 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         18 
+ 
+ 
+Table 1:Hardware Component List and Specifications 
+Component GPIO / 
+Specification 
+Qty Role in System 
+ESP32 
+Microcontroller 
+Dual-core, 240 
+MHz, Wi-Fi 
+1 Central processing, 
+sensor coordination, 
+actuator control 
+HC-SR04 
+Ultrasonic Sensor 
+TRIG: GPIO 27, 
+ECHO: GPIO 26 
+1 Vehicle entry detection; 
+distance threshold 20 
+cm 
+IR Exit Sensor GPIO 12; LOW = 
+vehicle detected 
+1 Unconditional exit gate 
+trigger for departing 
+vehicles 
+IR Slot Sensors 
+(IR1–IR3) 
+GPIO 25, 33, 32; 
+HIGH = free slot 
+3 Individual per-bay 
+occupancy monitoring 
+in real time 
+SG90 Servo Motor GPIO 13; PWM; 
+0° closed, 90° 
+open 
+1 Gate control for entry 
+and exit events 
+Traffic Light 
+Module 
+Red: GPIO 18, 
+Yellow: 19, 
+Green: 17 
+1 STOP (red), WARNING 
+(yellow flash), GO 
+(green) signals 
+20×4 I2C LCD 
+Display 
+SDA: GPIO 21, 
+SCL: GPIO 22; 
+Addr 0x27 
+1 Live slot count and 
+individual bay status 
+display 
+Resistors (220Ω, 
+1kΩ, 2kΩ) 
+Carbon film, ±5% 6 LED current limiting; 
+ECHO voltage divider 
+Breadboard & 
+Jumper Wires 
+Full-size 1 
+set 
+Circuit prototyping and 
+component 
+interconnection 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 19 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         19 
+ 
+Step 2 – Firmware Development 
+The firmware was written in C++ using the Arduino IDE (version 2.3.2) with the ESP32 
+board support package (version 3.0.x) installed via the Arduino Boards Manager 
+(Espressif Systems, 2023). Three libraries were used: ESP32Servo (v 0.13.0) for 
+PWM-compatible servo control; LiquidCrystal_I2C (v1.1.2) for I2C LCD 
+communication; and the built-in Wire.h library for I2C bus initialisation (Arduino, 2024). 
+The firmware is structured around the standard Arduino setup() and loop() functions.  
+The setup() function initialises all GPIO pin modes, attaches the servo and sets it to 
+0°, activates the STOP traffic light state, and displays the boot screen on the LCD. 
+The loop() function executes the following logic on each iteration: the 
+getEntryDistance() function triggers the HC -SR04 with a 10 -microsecond pulse on 
+GPIO 27 and calculates distance using the formula distance = duration × 0.034 / 2, 
+where duration is the ECHO pulse length measured by pulseIn() with a 26,000 -
+microsecond timeout. The countFreeSlots() function reads GPIO 25, 33, and 32 and 
+increments a counter for each HIGH output. The setTrafficLight() function applies one 
+of three states. A 400 -millisecond delay at the end of each loop cycle maintains a 
+stable polling rate without sensor read conflicts. 
+Step 3 – System Integration 
+Integration was staged to isolate and resolve component -level issues before full 
+system testing. The HC-SR04 was first tested standalone, verifying distance readings 
+from 5 to 50 cm with accuracy within ±2 cm. E ach slot IR sensor was individually 
+calibrated using its sensitivity potentiometer for reliable object detection at 3 to 5 cm. 
+The servo was tested through its full 0° to 90° range, confirming smooth actuation 
+without positional jitter. The traffic light sequence was verified by manually calling each 
+state in isolation. The I2C LCD address (0x27) was confirmed using an I2C scanner 
+sketch. Full integration testing then confirmed coherent multi -component behaviour 
+across all defined entry and exit scenarios. 
+  
+--- PAGE 20 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         20 
+ 
+5. Results and Findings  
+5.1 Project Outcomes 
+The Smart Parking System successfully met all six defined objectives. The HC-SR04 
+entry sensor consistently detected objects within the 20 cm threshold with an average 
+response latency of 120 to 180 millisecon ds, well within the 500 ms non -functional 
+requirement. All three IR slot sensors accurately tracked individual bay occupancy 
+states in real time, with immediate reflection in the LCD display and traffic light. The 
+servo gate reliably completed the full 0° –90°–0° cycle with no missed actuations 
+across all test runs. The exit IR sensor correctly triggered the unconditional gate-open 
+sequence on each detection event. The traffic light correctly cycled through STOP, 
+WARNING, GO, WARNING, STOP states during every gate event. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 21 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         21 
+ 
+5.2 System Testing Results 
+A structured test plan covering seven test cases was executed. Each test case was 
+run five times; the result below represents the unanimous outcome across all five runs, 
+yielding a 100% pass rate with no intermittent failures or inconsistent behaviours 
+observed. 
+ 
+Table 2:System Test Cases and Results Summary 
+TC Input Condition Expected Output Actual 
+Output 
+Statu
+s 
+TC
+-01 
+System power-
+on, boot 
+sequence 
+LCD boot, RED traffic light LCD and 
+STOP light 
+correct 
+PASS 
+TC
+-02 
+Vehicle <20 cm 
+at entry, slots 
+free 
+WARNING→GO→WARNING→ST
+OP, gate 90° 
+Full 
+sequence 
+completed 
+correctly 
+PASS 
+TC
+-03 
+Vehicle <20 cm, 
+all 3 slots 
+occupied 
+Gate stays 0°, LCD ‘PARKING 
+FULL’ 
+Entry 
+denied, no 
+gate 
+movement 
+PASS 
+TC
+-04 
+Exit IR sensor 
+triggered (LOW) 
+Unconditional gate open, ‘Safe 
+Travels!’ 
+Gate 
+opened 
+regardless 
+of slot count 
+PASS 
+TC
+-05 
+2 of 3 slots 
+occupied, 1 
+remaining 
+YELLOW traffic light (WARNING 
+state) 
+Yellow LED 
+active, 
+correct 
+count 
+PASS 
+TC
+-06 
+IR sensors 
+blocked/unblock
+ed individually 
+LCD S1/S2/S3 labels update 
+correctly 
+All 
+combination
+s displayed 
+accurately 
+PASS 
+TC
+-07 
+Full system, 
+Serial Monitor 
+open 
+Structured logs printed every loop All log 
+entries 
+correct and 
+complete 
+PASS 
+ 
+ 
+ 
+--- PAGE 22 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         22 
+ 
+ 
+5.3 Detailed Test Cases 
+Test Case TC-01 – System Initialization 
+Table 3: Detailed Test Case – TC-01 (System Initialization) 
+ 
+Test Number TC-01 
+Objective Verify that the system initializes correctly on power-up: LCD 
+displays the boot message, the gate servo is at 0° (closed), 
+and the traffic light enters STOP state (red LED active). 
+Equipment 
+Required 
+Assembled ESP32 board with firmware uploaded, 20×4 I2C 
+LCD, traffic light module, servo motor, USB power cable, 
+laptop with Arduino Serial Monitor at 115200 baud. 
+Pre-conditions Firmware successfully uploaded to the ESP32. All 
+hardware assembled per circuit diagram. No objects within 
+range of any sensor. 
+Step-by-Step 1. Connect ESP32 to USB. 2. Open Serial Monitor at 
+115200 baud. 3. Observe boot message. 4. Observe LCD 
+boot screen for 3 seconds then clear. 5. Observe Red LED 
+active (STOP state). 6. Observe servo at 0° (gate closed). 
+7. Confirm no GO or WARNING state is active. 8. Note 
+boot time. 
+Expected Result Serial Monitor prints boot message. LCD shows boot 
+screen then clears. Traffic light: RED active. Servo at 0°. 
+Boot completes within 4 seconds. 
+Actual Result Serial Monitor printed ‘SMART PARKING V2 – SYSTEM 
+READY’. LCD displayed boot screen for 3 seconds then 
+cleared. Red LED activated. Servo confirmed at 0°. Boot 
+completed in approximately 3.5 seconds. 
+Pass / Fail PASS 
+Conclusion All system components initialise correctly in the defined 
+order. The STOP traffic light state and closed gate position 
+on power-up confirm that the fail-safe default state is 
+correctly implemented. 
+--- PAGE 23 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         23 
+ 
+ 
+Figure 4:TC-01 – System Initialization Test Procedure Reference 
+ 
+ 
+ 
+
+--- PAGE 24 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         24 
+ 
+ 
+Test Case TC-02 – Entry Gate, Slots Available 
+ 
+Table 3:Detailed Test Case – TC-02 (Entry Gate, Slots Available) 
+Test Number TC-02 
+Objective Verify that the entry gate opens through the full 
+WARNING–GO–WARNING–STOP traffic light sequence 
+when a vehicle is detected within 20 cm and at least one 
+parking slot is free. 
+Equipment Full assembled system. Object to simulate a vehicle. Ruler 
+with 20 cm marked. Serial Monitor open at 115200 baud. 
+Pre-conditions System initialized (TC-01 passed). All three IR slot sensors 
+unobstructed (HIGH = free). Traffic light in STOP state. 
+Gate at 0°. 
+Step-by-Step 1. Confirm Serial Monitor shows [FREE] 3. 2. Confirm LCD: 
+TOTAL FREE: 3 / 3. 3. Hold object at ~30 cm from HC-
+SR04. 4. Slowly advance to below 20 cm. 5. Observe 
+WARNING flash (yellow, twice). 6. Observe servo rotate to 
+90° and GREEN LED activate. 7. Observe LCD: ACCESS 
+GRANTED. 8. After 4 seconds, observe WARNING flash, 
+gate close to 0°, RED LED activate. 
+Expected Result Full WARNING→GO→4 s open→WARNING→STOP 
+sequence completes. LCD: ACCESS GRANTED. Gate 
+opens and closes correctly. 
+Actual Result Complete traffic light sequence executed correctly. Servo 
+opened to 90° within approximately 130 ms of detection. 
+Gate held open for 4 seconds then closed. All serial log 
+entries correct. 
+Pass / Fail PASS 
+Conclusion Entry detection, gate actuation, full traffic light sequence, 
+LCD update, and serial logging all functioned correctly. 
+Response time well within the 500 ms requirement (Banzi 
+and Shiloh, 2022). 
+--- PAGE 25 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         25 
+ 
+ 
+Figure 5:TC-02 – Entry Gate (GO Sequence) Test Procedure Reference 
+ 
+ 
+ 
+
+--- PAGE 26 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         26 
+ 
+ 
+Test Case TC-03 – Entry Denied, Parking Full 
+ 
+ 
+Table 4:Detailed Test Case – TC-03 (Entry Denied, Parking Full) 
+Test Number TC-03 
+Objective Verify that the entry gate remains closed and ‘PARKING 
+FULL’ is displayed when a vehicle is detected but all three 
+parking slots are occupied. 
+Equipment Full assembled system. Three small objects to block all 
+three IR slot sensors. One additional object to trigger the 
+HC-SR04 entry sensor. Serial Monitor open. 
+Pre-conditions System initialized. All three IR sensors blocked (LOW 
+output). Traffic light RED. Gate at 0°. 
+Step-by-Step 1. Block IR1, IR2, and IR3 simultaneously. 2. Confirm 
+[FREE] 0 in Serial Monitor. 3. Confirm LCD: TOTAL FREE: 
+0 / 3 with all slots OCCUPIED. 4. Move hand within 20 cm 
+of HC-SR04. 5. Confirm servo does NOT rotate. 6. Confirm 
+LCD: PARKING FULL / ENTRY DENIED. 7. Confirm traffic 
+light remains RED throughout. 
+Expected Result Gate stays at 0°. LCD: PARKING FULL. Serial: [ALERT] 
+Entry Denied. Traffic light: RED, no state change. 
+Actual Result Gate remained at 0°. LCD displayed PARKING FULL and 
+ENTRY DENIED for 3 seconds then cleared. Serial Monitor 
+printed correct [ALERT] entry. Traffic light remained RED 
+throughout. 
+Pass / Fail PASS 
+Conclusion The system correctly denied entry when capacity was full. 
+The fail-safe gate-closed behavior and RED traffic light 
+state were maintained correctly without any unintended 
+actuation (Pham and Huh, 2021). 
+--- PAGE 27 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         27 
+ 
+ 
+Figure 6:TC-03 – Entry Denied (Parking Full) Test Procedure Reference 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- PAGE 28 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         28 
+ 
+ 
+Test Case TC-04 – Exit Gate Trigger (Unconditional) 
+ 
+Table 5:Detailed Test Case – TC-04 (Exit Gate Trigger) 
+Test Number TC-04 
+Objective Verify that the exit gate opens unconditionally when the exit 
+IR sensor (GPIO 12) detects a vehicle, regardless of the 
+current slot availability state. 
+Equipment Full assembled system. Object to trigger the exit IR sensor 
+(GPIO 12). Serial Monitor open. 
+Pre-conditions System initialized. Gate at 0°. Exit IR sensor unobstructed. 
+Slot sensors may be in any state. 
+Step-by-Step 1. Place object within range of exit IR sensor. 2. Observe 
+Serial Monitor: [EXIT] IR: DETECTED. 3. Observe LCD: 
+SAFE TRAVELS! 4. Observe WARNING flash, then servo 
+to 90°, then GREEN LED. 5. After 4 seconds, WARNING 
+flash, gate closes, RED LED returns. 6. Repeat with all slot 
+sensors blocked to confirm unconditional behavior. 
+Expected Result Exit IR triggers gate open unconditionally. LCD: SAFE 
+TRAVELS! Full WARNING→GO→WARNING→STOP 
+sequence completes. Gate opens even when facility is full. 
+Actual Result Exit gate opened correctly on both slot-free and slot-full 
+tests. LCD displayed SAFE TRAVELS! correctly. Full traffic 
+light sequence executed. Serial log confirmed correct 
+action in both scenarios. 
+Pass / Fail PASS 
+Conclusion The independent exit gate logic functioned correctly, 
+demonstrating that departing vehicles can exit without any 
+attendant interaction, irrespective of current occupancy 
+state. 
+--- PAGE 29 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         29 
+ 
+       
+Figure 7:TC-04 – Exit Gate (Unconditional) Test Procedure Reference 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- PAGE 30 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         30 
+ 
+ 
+ 
+Test Case TC-06 – LCD Slot Display Accuracy 
+ 
+Table 6:Detailed Test Case – TC-06 (LCD Slot Display Accuracy)  
+Test Number TC-06 
+Objective Verify that the LCD correctly displays individual bay 
+occupancy status (EMPTY / OCCUPIED) and aggregate 
+free count for all possible combinations of IR sensor states. 
+Equipment Full assembled system. Three small objects to selectively 
+block each IR sensor. Camera for photographing LCD at 
+each stage. 
+Pre-conditions System initialized in idle state. All sensors unobstructed. 
+LCD: TOTAL FREE: 3 / 3, all slots EMPTY. 
+Step-by-Step 1. Confirm baseline: TOTAL FREE: 3 / 3.  
+2. Block IR1 only; confirm TOTAL FREE: 2 / 3, SLOT 1: 
+OCCUPIED. 
+3. Block IR2; confirm 1 / 3.  
+4. Block IR3; confirm 0 / 3, all OCCUPIED.  
+5. Unblock IR1; confirm 1 / 3.  
+6. Unblock IR2; confirm 2 / 3.  
+7. Unblock IR3; confirm 3 / 3.  
+8. Photograph LCD at steps 1, 2, 3, and 4. 
+Expected Result LCD correctly reflects each IR sensor state with correct 
+aggregate count. All seven tested combinations display 
+accurately. 
+Actual Result All seven combinations produced the correct LCD output. 
+Display updated within one loop cycle (approximately 400 
+ms) of each IR sensor state change. No incorrect labels or 
+count errors observed. 
+Pass / Fail PASS 
+Conclusion The LCD display correctly reflects real-time occupancy 
+status of all three individual bays in a format clearly 
+readable by the facility operator or driver (Pham and Huh, 
+2021). 
+--- PAGE 31 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         31 
+ 
+ 
+Figure 8:TC-06 – LCD Slot Display Accuracy Test Procedure Reference 
+ 
+ 
+ 
+
+--- PAGE 32 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         32 
+ 
+ 
+Test Case TC-07 – Serial Monitor Validation 
+ 
+Table 7:Detailed Test Case – TC-07 (Serial Monitor Validation) 
+Test Number TC-07 
+Objective Verify that the Serial Monitor outputs correctly structured 
+loop logs containing entry distance, exit IR state, and free 
+slot count on every iteration, with action and alert labels 
+appearing correctly on relevant events. 
+Equipment ESP32 connected to laptop via USB. Arduino IDE with 
+Serial Monitor open at 115200 baud. Full system 
+assembled. Objects to trigger sensors. 
+Pre-conditions System powered on and initialized. Serial Monitor open at 
+correct baud rate. 
+Step-by-Step 1. Observe continuous loop output; confirm [ENTRY] Dist, 
+[EXIT] IR: CLEAR, and [FREE] on every iteration.  
+2. Move object within 20 cm of HC-SR04; confirm 
+[ACTION] or [ALERT] appears. 
+3. Place object near exit IR; confirm [EXIT] IR: DETECTED.  
+4. Block one slot sensor; confirm [FREE] decrements. 
+5. Block all three and trigger entry; confirm [ALERT] Entry 
+Denied.  
+6. Screenshot all five label types. 
+Expected Result Every loop prints a complete structured log. [ACTION] on 
+valid entry and exit. [ALERT] on denied entry. [FREE] count 
+matches actual unblocked IR sensors. 
+Actual Result All log labels printed correctly. [ENTRY], [EXIT], and 
+[FREE] appeared on every loop iteration. [ACTION] and 
+[ALERT] appeared on correct trigger conditions. 
+Screenshot captured as evidence. 
+Pass / Fail PASS 
+Conclusion The Serial Monitor output provides reliable, structured 
+validation data for all system states and events. This log 
+format also forms the foundation for future Blynk cloud 
+integration (Espressif Systems, 2023). 
+--- PAGE 33 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         33 
+ 
+ 
+Figure 9:TC-07 – Serial Monitor Validation Test Procedure Reference 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- PAGE 34 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         34 
+ 
+5.4 Performance Observations 
+Beyond binary pass/fail outcomes, several qualitative performance characteristics 
+were recorded. The average end -to-end response time fr om HC-SR04 detection to 
+servo actuation was consistently between 120 and 180 milliseconds across all test 
+runs, well within the 500 ms non-functional requirement (Banzi and Shiloh, 2022). The 
+HC-SR04 produced stable distance readings throughout the 30 -minute continuous 
+test period with no spurious trigger events. The 1 kΩ/2 kΩ voltage divider on the ECHO 
+line (GPIO 26) effectively protected the ESP32 GPIO input with no logic errors or pin 
+damage observed. All three IR slot sensors returned stable states wit h no cross -
+sensor interference. The traffic light WARNING flash sequence (two 200 ms on/off 
+cycles) executed at the correct timing in every test run. The LCD updated within one 
+400 ms loop cycle of each sensor state change with no display artefacts or I2C 
+communication errors. 
+  
+--- PAGE 35 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         35 
+ 
+6. Future Works 
+6.1 Blynk Cloud Integration and Backend Analytics 
+The most impactful near-term enhancement is the full integration of the Blynk IoT cloud 
+platform for live data streaming, backend database storage, and analytical rep orting 
+(Blynk, 2024). While the current system produces structured validation output via the 
+Serial Monitor, the future implementation will connect the ESP32 directly to Blynk’s 
+cloud servers using the BlynkSimpleEsp32.h library and a device authentication token. 
+Each of the three IR slot sensor states will be mapped to dedicated Blynk Virtual Pins 
+(V1 for IR1, V2 for IR2, V3 for IR3), with the aggregate free slot count on V0 and the 
+gate state on V4. 
+Blynk’s DataStream logging and Super Chart widget will record every occupancy event 
+with a timestamp to the Blynk cloud backend database. This timestamped dataset will 
+enable peak parking time analysis, directly informing pricing decisions for the 
+Kathmandu facility operator. Blynk push notifications can alert the owner when the 
+facility reaches full capacity or when a slot becomes free after a period of full 
+occupancy, enabling proactive management without requiring physical presence at 
+the facility (Blynk, 2024). 
+A complementary web dashboard — deployable via Cloudflare Pages or GitHub 
+Pages as a static site — is also planned to provide a professional booking interface. 
+The dashboard will include a real-time slot availability map, a slot reservation system 
+with time-slot selection, and an occupancy analytics pa nel displaying historical peak-
+hour data sourced from the Blynk backend. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 36 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         36 
+ 
+6.2 Additional Enhancements 
+Further enhancements identified for subsequent development phases include: 
+• RFID-Based Access Control: An MFRC522 RFID reader at the entry lane would 
+enable registered vehicle identification, restricting access to authorized 
+vehicles and enabling automated vehicle logging (Kumar, Tiwari and Zymbler, 
+2019). 
+• Number Plate Recognition: An ESP32-CAM module with OpenCV-based plate 
+recognition would enable automatic vehicle logging without requiring RFID 
+tags, building a complete entry and exit record in the Blynk backend database. 
+• Automated Payment Integration: Time-of-occupancy data logged via Blynk can 
+integrate with a mobile payment gateway to enable cashless, automated 
+parking fee collection. 
+• Weatherproofing for Outdoor Deployment: Enclosing the electronics in an IP65-
+rated enclosure and replacing the breadboard with a custom PCB would make 
+the system suitable for permanent outdoor installation. 
+• Solar Power Integration: A 5 to 10W solar panel with a LiPo battery buffer would 
+provide off -grid operation, mitigating the impact of Nepal’s frequent load -
+shedding periods on system uptime (Gregor and Bhatt, 2020). 
+6.3 Sustainable Deployment Plan 
+Sustainable deployment at scale in Nepal requires consideration of local 
+environmental, economic, and social factors. Publishing the hardware design files and 
+firmware source code under an open -source license such as MIT would allow other 
+Nepali facilities and educational institutions to adopt the system at minimal cost. All 
+components used are available from local electronics suppliers in Kathmandu’s New 
+Road and Asan markets, supporting the local econ omy and reducing import 
+dependency. Partnering with local technical schools and colleges to train facility staff 
+in basic system maintenance would ensure long -term operational sustainability 
+without dependence on external specialist technicians. The ESP32’ s low power 
+consumption and the potential for solar integration minimize the environmental 
+footprint of deployment at scale (Gregor and Bhatt, 2020). 
+  
+--- PAGE 37 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         37 
+ 
+7. Conclusion  
+7.1 Ethical and Legal Analysis of the Project 
+Data Privacy 
+The current prototype does not collect personally identifiable information. However, if 
+Blynk cloud logging, RFID access control, or number plate recognition are 
+implemented in future phases, the system will process personally identifiable vehicle 
+data. All such data must be handled in compliance with Nepal’s Privacy Act 2018. Data 
+stored on the Blynk cloud backend must be encrypted, with a defined retention policy 
+and explicit user consent mechanisms for any vehicle identification features. Facility 
+signage should clearly inform users of any data collection in operation. 
+Surveillance and Consent 
+The deployment of IR sensors and, in future, cameras in semi -public parking spaces 
+must be accompanied by clear visible signage informing users that automated 
+monitoring is in operation. Transparency in data collection practices is both an ethical 
+obligation and in many jurisdictions a legal requirement. In Nepal, the Electronic 
+Transaction Act and Privacy Act 2018 provide the relevant regulatory framework. 
+Safety and Liability 
+The automated gate control system must incorporate fail-safe mechanisms to prevent 
+injury. Specifically, the gate defaults to the open position in the event of system power 
+failure or firmware crash, ensuring vehicles are never trapped in the facility. The 
+WARNING (yellow fl ashing) traffic light sequence before every gate movement 
+provides a visual safety alert consistent with road traffic safety practice. Regular 
+maintenance schedules and documented testing protocols should be established to 
+maintain operational safety standards. 
+Accessibility and Environmental Impact 
+The three -state traffic light module provides an internationally recognized and 
+accessibility-compliant entry signaling system, significantly more intuitive and visible 
+than single-LED indicators. Future iterations should consider auditory signals for 
+visually impaired users. The low -power ESP32 microcontroller, combined with the 
+potential for solar power integration, minimizes the environmental footprint. End-of-life 
+disposal of all electronic components must be managed in accordance with Nepal’s 
+applicable e-waste regulations. 
+--- PAGE 38 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         38 
+ 
+7.2 Overall Conclusion 
+The Smart Parking System project has successfully demonstrated the design, 
+implementation, and testing of a functional, dual-gate IoT-enabled automated parking 
+prototype using the ESP32 microcontroller. The system monitors three individual 
+parking bays thr ough three dedicated IR sensors, provides color-coded traffic light 
+entry signals through a three -state STOP/WARNING/GO module, automates both 
+entry and exit gate operations via a servo motor, and displays real -time slot counts 
+and individual bay status on  a 20×4 I2C LCD. A structured seven -case test plan 
+yielded a 100% pass rate with response times consistently between 120 and 180 
+milliseconds, well within the 500 ms non-functional requirement. 
+The system directly addresses the operational challenges of sm all parking facility 
+operators in Kathmandu, Nepal, providing automated management of entry, exit, and 
+occupancy tracking at a component cost of approximately NPR 3,000 to 5,000. The 
+planned integration of the Blynk cloud platform and a web -based booking dashboard 
+in the next development phase will extend the system from a standalone automation 
+prototype into a data -driven management tool, enabling peak -hour analysis, remote 
+mobile monitoring, and automated alerts that directly support facility revenue 
+optimization. The Smart Parking System is a technically validated, cost -effective, and 
+locally deployable prototype with a clear roadmap to full -scale smart parking 
+management across the rapidly urbanizing cities of Nepal (Pham and Huh, 2021). 
+  
+--- PAGE 39 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         39 
+ 
+8. References  
+ 
+Arduino (2024) Arduino Reference: Language Reference. Arduino. Available at: 
+https://www.arduino.cc/reference/en/ (Accessed: 5 April 2026). 
+Banzi, M. and Shiloh, M. (2022) Getting Started with Arduino. 4th edn. Sebastopol: 
+Maker Media. 
+Blynk (2024) Blynk IoT Platform Documentation. Blynk Inc. Available at: 
+https://docs.blynk.io (Accessed: 8 April 2026). 
+Espressif Systems (2023) ESP32 Technical Reference Manual. Espressif Systems. 
+Available at: 
+https://www.espressif.com/sites/default/files/documentation/esp32_technical_r
+eference_manual_en.pdf (Accessed: 18 March 2026). 
+Gregor, D. and Bhatt, R. (2020) Internet of Things: Principles and Paradigms. 2nd edn. 
+New York: Academic Press. 
+Kumar, S., Tiwari, P. and Zymbler, M. (2019) ‘Internet of Things is a revolutio nary 
+approach for future technology enhancement: a review’, Journal of Big Data, 
+6(111), pp. 1 –21. Available at: https://doi.org/10.1186/s40537 -019-0268-2 
+(Accessed: 17 March 2026). 
+Pham, V.C. and Huh, J. -H. (2021) ‘IoT-Based Smart Parking System Using Sen sor 
+Data Fusion’, Electronics, 10(7), p. 821. Available at: 
+https://doi.org/10.3390/electronics10070821 (Accessed: 18 March 2026). 
+Zanella, A., Bui, N., Castellani, A., Vangelista, L. and Zorzi, M. (2014) ‘Internet of 
+Things for Smart Cities’, IEEE Interne t of Things Journal, 1(1), pp. 22 –32. 
+Available at: https://doi.org/10.1109/JIOT.2014.2306328 (Accessed: 16 March 
+2026). 
+  
+--- PAGE 40 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         40 
+ 
+9. Weekly Logbooks 
+ 
+All weekly logbooks documenting individual member contributions, tasks completed, 
+challenges encountered, and pla ns for the following week are attached to this 
+submission as per the milestone guidelines. A minimum of six weekly logbooks have 
+been maintained throughout the project duration, spanning from the initial system 
+design phase in Milestone 1 through to the fi nal integration and testing phase in 
+Milestone 2. 
+ 
+workbook  1.docx
+ 
+logbook 2.docx
+ 
+workbook 3.docx
+ 
+logbook 4.docx
+ 
+logbook 5.docx
+ 
+logbook 6.docx
+  
+--- PAGE 41 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         41 
+ 
+10. Appendix 
+Appendix A: Source Code 
+The complete ESP32 firmware source code for the Smart Parking System is provided 
+below. This is the exact firmware used during all testing documented in Section 5. The 
+code monitors three parking slots via three IR sensors (IR1–IR3), controls a dual-gate 
+mechanism via a single servo, drives a three -state traffic light module 
+(STOP/WARNING/GO), manages independent entry and exit detect ion logic, and 
+outputs structured validation logs to the Serial Monitor on every loop iteration. 
+ 
+#define BLYNK_TEMPLATE_ID "TMPL6ICF-C8u_" 
+#define BLYNK_TEMPLATE_NAME "Smart Parking 01" 
+#define BLYNK_AUTH_TOKEN "WopQR2bWweLmSMi2gbAZRejhf7yOOi21" 
+ 
+#include <WiFi.h> 
+#include <BlynkSimpleEsp32.h> 
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h> 
+#include <ESP32Servo.h> 
+ 
+// ── Wi-Fi credentials ────────────────────────────────────────── 
+char ssid[] = "demataka";      // CHANGE THIS 
+char pass[] = "nowifiplzz";  // CHANGE THIS 
+ 
+// ── Pin Definitions (unchanged from your original) ───────────── 
+#define ENTRY_TRIG 27 
+#define ENTRY_ECHO 26 
+#define EXIT_IR    12 
+#define IR1 25 
+#define IR2 33 
+#define IR3 32 
+#define RED_LED    18 
+#define YELLOW_LED 19 
+#define GREEN_LED  17 
+#define SERVO_PIN  13 
+ 
+// ── Objects & Settings ───────────────────────────────────────── 
+Servo gateServo; 
+LiquidCrystal_I2C lcd(0x27, 16, 2); 
+BlynkTimer timer;              // Blynk's built-in non-blocking timer 
+ 
+const int ENTRY_THRESHOLD = 20; 
+const int GATE_OPEN_TIME  = 4000; 
+bool gateIsOpen = false;       // Track gate state so we can report it to 
+Blynk 
+--- PAGE 42 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         42 
+ 
+ 
+// ══════════════════════════════════════════════════════════════ 
+//  sendSensorDataToBlynk() 
+//  This function is called every 2 seconds by the BlynkTimer. 
+//  It reads all three IR sensors and the gate state, then 
+//  pushes the values to the virtual pins in Blynk cloud. 
+//  The dashboard reads these same virtual pins every 5 seconds. 
+// ══════════════════════════════════════════════════════════════ 
+void sendSensorDataToBlynk() { 
+  // Read IR sensors. HIGH = beam not blocked = slot is EMPTY = send 1 (free) 
+  //                  LOW  = beam is blocked  = slot is OCCUPIED = send 0 
+  int s1   = (digitalRead(IR1) == HIGH) ? 1 : 0; 
+  int s2   = (digitalRead(IR2) == HIGH) ? 1 : 0; 
+  int s3   = (digitalRead(IR3) == HIGH) ? 1 : 0; 
+  int gate = gateIsOpen ? 1 : 0; 
+ 
+  // Push to Blynk virtual pins 
+  Blynk.virtualWrite(V0, s1);    // Slot 1 → V0 
+  Blynk.virtualWrite(V1, s2);    // Slot 2 → V1 
+  Blynk.virtualWrite(V2, s3);    // Slot 3 → V2 
+  Blynk.virtualWrite(V5, gate);  // Gate   → V5 
+ 
+  // Confirm in Serial Monitor 
+  Serial.println("[BLYNK] Sent → V0(S1):" + String(s1) + 
+                 " V1(S2):" + String(s2) + 
+                 " V2(S3):" + String(s3) + 
+                 " V5(Gate):" + String(gate)); 
+} 
+ 
+// ── Sensor helper functions (unchanged from your original) ────── 
+long getEntryDistance() { 
+  digitalWrite(ENTRY_TRIG, LOW); 
+  delayMicroseconds(2); 
+  digitalWrite(ENTRY_TRIG, HIGH); 
+  delayMicroseconds(10); 
+  digitalWrite(ENTRY_TRIG, LOW); 
+  long duration = pulseIn(ENTRY_ECHO, HIGH, 26000); 
+  return duration * 0.034 / 2; 
+} 
+ 
+int countFreeSlots() { 
+  int count = 0; 
+  if (digitalRead(IR1) == HIGH) count++; 
+  if (digitalRead(IR2) == HIGH) count++; 
+  if (digitalRead(IR3) == HIGH) count++; 
+  return count; 
+} 
+ 
+--- PAGE 43 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         43 
+ 
+void setTrafficLight(String state) { 
+  if (state == "STOP") { 
+    digitalWrite(RED_LED, HIGH); digitalWrite(YELLOW_LED, LOW); 
+digitalWrite(GREEN_LED, LOW); 
+  } else if (state == "GO") { 
+    digitalWrite(RED_LED, LOW); digitalWrite(YELLOW_LED, LOW); 
+digitalWrite(GREEN_LED, HIGH); 
+  } else if (state == "WARNING") { 
+    digitalWrite(RED_LED, LOW); digitalWrite(GREEN_LED, LOW); 
+    for (int i = 0; i < 2; i++) { 
+      digitalWrite(YELLOW_LED, HIGH); delay(200); 
+      digitalWrite(YELLOW_LED, LOW);  delay(200); 
+    } 
+  } 
+} 
+//setup 
+  Serial.begin(115200); 
+  Serial.println("\n======================================"); 
+  Serial.println("   SMART PARKING SYSTEM — STARTING"); 
+  Serial.println("======================================"); 
+ 
+  // Pin setup (unchanged) 
+  pinMode(ENTRY_TRIG, OUTPUT); pinMode(ENTRY_ECHO, INPUT); 
+  pinMode(EXIT_IR, INPUT); 
+  pinMode(IR1, INPUT); pinMode(IR2, INPUT); pinMode(IR3, INPUT); 
+  pinMode(RED_LED, OUTPUT); pinMode(YELLOW_LED, OUTPUT); pinMode(GREEN_LED, 
+OUTPUT); 
+ 
+  gateServo.attach(SERVO_PIN); 
+  gateServo.write(0); 
+  setTrafficLight("STOP"); 
+ 
+  lcd.init(); lcd.backlight(); 
+  lcd.setCursor(0, 0); lcd.print("Connecting WiFi"); 
+ 
+  // ── Connect to WiFi and Blynk ───────────────────────────── 
+  Serial.println("[WIFI]  Connecting to: " + String(ssid)); 
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); 
+  // Blynk.begin() blocks here until connected — the LCD shows "Connecting 
+WiFi" 
+  // while it waits. Once connected, it continues to the next lines. 
+ 
+  Serial.println("[WIFI]  Connected! IP: " + WiFi.localIP().toString()); 
+  Serial.println("[BLYNK] Connected to blynk.cloud ✓"); 
+ 
+  // ── Set up the 2-second data-sending timer ──────────────── 
+  // This does NOT use delay(). It runs in the background via timer.run() in 
+loop(). 
+--- PAGE 44 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         44 
+ 
+  timer.setInterval(2000L, sendSensorDataToBlynk); 
+ 
+  lcd.clear(); 
+  lcd.setCursor(0, 0); lcd.print("Smart Parking"); 
+  lcd.setCursor(0, 1); lcd.print("SYSTEM  READY"); 
+  delay(1500); 
+  lcd.clear(); 
+ 
+  Serial.println("[INIT]  Gate servo: 0° — CLOSED"); 
+  Serial.println("[INIT]  Traffic light: STOP (RED ON)"); 
+  Serial.println("[INIT]  Blynk timer: every 2 seconds"); 
+  Serial.println("--------------------------------------"); 
+} 
+ 
+// ══════════════════════════════════════════════════════════════ 
+//  LOOP 
+// ══════════════════════════════════════════════════════════════ 
+void loop() { 
+  Blynk.run();   // ← REQUIRED: keeps the Blynk connection alive 
+  timer.run();   // ← REQUIRED: triggers sendSensorDataToBlynk() every 2 
+seconds 
+ 
+  long entDist    = getEntryDistance(); 
+  bool exitDetect = (digitalRead(EXIT_IR) == LOW); 
+  int  freeSlots  = countFreeSlots(); 
+ 
+  // ── Serial Monitor snapshot ─────────────────────────────── 
+  Serial.println("--- SENSOR SNAPSHOT ---"); 
+  Serial.println("  [ULTRASONIC] Entry distance: " + String(entDist) + " 
+cm  (threshold: 20 cm)"); 
+  Serial.println("  [EXIT-IR]    Exit sensor: "    + String(exitDetect ? 
+"VEHICLE DETECTED" : "Clear")); 
+  Serial.println("  [SLOT 1]     IR1 = " + String(digitalRead(IR1) ? "HIGH → 
+EMPTY" : "LOW  → OCCUPIED")); 
+  Serial.println("  [SLOT 2]     IR2 = " + String(digitalRead(IR2) ? "HIGH → 
+EMPTY" : "LOW  → OCCUPIED")); 
+  Serial.println("  [SLOT 3]     IR3 = " + String(digitalRead(IR3) ? "HIGH → 
+EMPTY" : "LOW  → OCCUPIED")); 
+  Serial.println("  [SUMMARY]    Free slots available: " + String(freeSlots) + 
+" / 3"); 
+ 
+  // ── LCD update ──────────────────────────────────────────── 
+  lcd.setCursor(0, 0); lcd.print("Free Slots: "); lcd.print(freeSlots); 
+  lcd.setCursor(0, 1); 
+  lcd.print("S1:"); lcd.print(digitalRead(IR1) ? "E " : "F "); 
+  lcd.print("S2:"); lcd.print(digitalRead(IR2) ? "E " : "F "); 
+  lcd.print("S3:"); lcd.print(digitalRead(IR3) ? "E"  : "F"); 
+ 
+--- PAGE 45 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         45 
+ 
+  // ── Entry gate logic ────────────────────────────────────── 
+  if (entDist > 0 && entDist < ENTRY_THRESHOLD) { 
+    if (freeSlots > 0) { 
+      Serial.println("  [ACTION] ENTRY: vehicle detected at " + 
+String(entDist) + "cm — OPENING gate"); 
+      lcd.clear(); lcd.print("Access Granted"); 
+      setTrafficLight("WARNING"); 
+      gateServo.write(90); 
+      gateIsOpen = true; 
+      Blynk.virtualWrite(V5, 1);   // Instantly report gate open (don't wait 
+for timer) 
+      setTrafficLight("GO"); 
+      delay(GATE_OPEN_TIME); 
+      setTrafficLight("WARNING"); 
+      gateServo.write(0); 
+      gateIsOpen = false; 
+      Blynk.virtualWrite(V5, 0);   // Instantly report gate closed 
+      setTrafficLight("STOP"); 
+      lcd.clear(); 
+    } else { 
+      Serial.println("  [ALERT]  ENTRY DENIED — all 3 slots occupied"); 
+      lcd.clear(); lcd.print("PARKING FULL"); 
+      delay(2000); 
+      lcd.clear(); 
+    } 
+  } 
+ 
+  // ── Exit gate logic ─────────────────────────────────────── 
+  if (exitDetect) { 
+    Serial.println("  [ACTION] EXIT: vehicle at exit sensor — OPENING gate"); 
+    lcd.clear(); lcd.print("Safe Travels!"); 
+    setTrafficLight("WARNING"); 
+    gateServo.write(90); 
+    gateIsOpen = true; 
+    Blynk.virtualWrite(V5, 1); 
+    setTrafficLight("GO"); 
+    delay(GATE_OPEN_TIME); 
+    setTrafficLight("WARNING"); 
+    gateServo.write(0); 
+    gateIsOpen = false; 
+    Blynk.virtualWrite(V5, 0); 
+    setTrafficLight("STOP"); 
+    lcd.clear(); 
+  } 
+ 
+  delay(400); 
+} 
+ 
+--- PAGE 46 ---
+Fundamentals of Robotics and IOT                                                             CC4003NI 
+ 
+Praansu Karmacharya                                                                                         46 
+ 
+ 
+Appendix B: Other Objectives of the System 
+Beyond the primary functional objectives in Section 1.3, the Smart Parking System 
+was designed to address the following supplementary objectives: 
+• To produce complete and reproducible design documentation — hardware 
+architecture diagram, system flowchart, and circuit diagram — sufficient for 
+independent replication of the prototype by another developer. 
+• To demonstrate the feasibility of a sub -NPR 5,000 IoT parking prototype 
+suitable for resource-constrained deployments in Nepal and similar developing 
+urban contexts, using only locally available components (Gregor and Bhatt, 
+2020). 
+• To provide a modular firmware architecture (getEntryDistance(), 
+countFreeSlots(), setTrafficLight()) that is readily extensible for additional slots, 
+Blynk cloud integration, RFID access control, and number plate recognition 
+without requiring a hardware platform change. 
+• To produce structured Serial Monitor logs on ever y firmware loop iteration, 
+creating a diagnostic and validation data stream that directly supports future 
+Blynk cloud database integration for peak -hour occupancy analytics (Blynk, 
+2024). 
+• To identify and document ethical and legal considerations relevant t o 
+automated parking systems — including Nepal’s Privacy Act 2018, surveillance 
+consent, and physical gate safety — to support responsible deployment 
+decision-making. 

@@ -1,7 +1,4 @@
-/*
- * Dashboard frontend — talks to the FastAPI backend every 2 seconds
- * and keeps the UI in sync. No frameworks, just vanilla JS + Chart.js.
- */
+// Dashboard frontend - polls FastAPI backend every 2s, vanilla JS + Chart.js
 
 const ST = {
   slots: [true, true, true],

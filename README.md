@@ -1,29 +1,35 @@
-# ParkX - Smart Parking System
+# ParkX — Smart Parking Dashboard
 
-Real-time smart parking monitoring system with AI chatbot, license plate recognition, and booking system. Built with FastAPI, ESP32, and Blynk IoT.
+A web dashboard for monitoring parking slot availability in real time. Built as a learning project to explore IoT, backend development, and real-time data.
 
-## Features
-- Real-time parking slot monitoring via ultrasonic sensors and ESP32
-- AI-powered chatbot for reservations and queries
-- Live web dashboard with slot visualization (Chart.js)
-- Booking system with time-slot management
-- Blynk IoT integration for remote monitoring
-- Email notifications for bookings
+## What It Does
+- Reads sensor data from an ESP32 microcontroller connected to ultrasonic sensors
+- Sends data to the cloud using Blynk IoT platform
+- Displays real-time parking slot status on a web dashboard
+- Includes a basic booking system and chatbot (experimental)
+
+## What I Learned
+- How to write Arduino firmware for ESP32
+- How to build a REST API with FastAPI
+- How to integrate IoT devices with a web backend
+- How to create a real-time dashboard with Chart.js
+- Database design with SQLite
 
 ## Tech Stack
-- **Backend:** FastAPI, Python, SQLAlchemy, SQLite
-- **Firmware:** Arduino/ESP32 with ultrasonic sensors
-- **IoT:** Blynk Cloud API
+- **Backend:** FastAPI (Python)
+- **Hardware:** ESP32, ultrasonic sensors
+- **IoT:** Blynk Cloud
 - **Frontend:** HTML, CSS, JavaScript, Chart.js
-- **AI:** LLM integration for chatbot
+- **Database:** SQLite
+
+## How to Run
+1. Install dependencies: pip install -r requirements.txt
+2. Configure your Blynk token in backend.py
+3. Run: python backend.py
+4. Open the dashboard in your browser
 
 ## Project Structure
-
-
-## Getting Started
-
-1. Clone the repo
-2. Install dependencies: pip install -r requirements.txt
-3. Configure your Blynk token in backend.py
-4. Run: python backend.py
-5. Open the dashboard in your browser
+backend.py — Main FastAPI server
+parking_backend/ — Backend modules (AI, Blynk, database, routes)
+frontend/ — Web dashboard files
+smart_parking_v2/ — ESP32 Arduino firmware

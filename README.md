@@ -1,54 +1,32 @@
-# ParkX — Smart Parking Dashboard
+# ParkX
 
-[![CI](https://img.shields.io/github/actions/workflow/status/Praansu/ParkX/ci.yml?style=flat-square&label=CI)](https://github.com/Praansu/ParkX/actions)
-[![License](https://img.shields.io/github/license/Praansu/ParkX?style=flat-square)](LICENSE)
+I got tired of circling parking lots. So I built this — ESP32 + ultrasonic sensors → Blynk IoT → FastAPI backend → real-time dashboard. Green means free, red means taken.
 
-I built this because I got tired of circling parking lots looking for a spot. Then I thought — wait, I'm a CS student, I should be able to fix this. So I wired up an ESP32 with ultrasonic sensors, hooked it to a dashboard, and ParkX was born.
+Has a booking system and a chatbot. The chatbot works _most_ of the time.
 
-**Notable late-night debugging sessions:** 3 (and counting).
+[![CI](https://img.shields.io/github/actions/workflow/status/Praansu/ParkX/ci.yml?style=flat-square)](https://github.com/Praansu/ParkX/actions)
 
-## What it does
+### tech
 
-- Ultrasonic sensors (connected to ESP32) detect if a parking slot is occupied
-- Data flows through Blynk IoT cloud to a FastAPI backend
-- A web dashboard shows real-time slot status — green = free, red = taken
-- Has a basic booking system and an experimental chatbot (still working on making it useful)
+FastAPI (Python), ESP32, ultrasonic sensors, Blynk, Chart.js, SQLite
 
-## Tech stuff
-
-| Layer | What I used |
-|-------|-------------|
-| Backend | FastAPI (Python) |
-| Hardware | ESP32 + ultrasonic sensors |
-| IoT | Blynk Cloud |
-| Frontend | HTML, CSS, JavaScript, Chart.js |
-| Database | SQLite |
-
-## What I learned (the hard way)
-
-- ESP32 firmware is finicky. One wrong pin assignment and you spend an hour debugging.
-- Real-time data with WebSockets is not as straightforward as tutorials make it seem.
-- Chart.js is great until you try to do something slightly unusual.
-- IoT + web == way more moving parts than I expected. But also way more satisfying when it works.
-
-## How to run it yourself
+### run it
 
 ```bash
 pip install -r requirements.txt
-# Set your Blynk token in backend.py
+# set your Blynk token in backend.py
 python backend.py
-# Open the dashboard URL in your browser
 ```
 
-## Project layout
+### what I learned
+
+ESP32 firmware is finicky. One wrong pin = hour of debugging. Real-time WebSockets are harder than they look. IoT + web is way more moving parts than expected but way more satisfying when it works.
+
+### layout
 
 ```
-backend.py              — Main FastAPI server
-parking_backend/        — Backend modules (AI, Blynk, database, routes)
-frontend/               — Dashboard HTML/CSS/JS
-smart_parking_v2/       — ESP32 Arduino firmware
+backend.py              — FastAPI server
+parking_backend/        — AI, Blynk, database, routes
+frontend/               — dashboard files
+smart_parking_v2/       — ESP32 firmware
 ```
-
-## License
-
-MIT — go ahead, fork it, break it, fix it.

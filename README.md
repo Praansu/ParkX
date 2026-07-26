@@ -1,35 +1,51 @@
 # ParkX — Smart Parking Dashboard
 
-A web dashboard for monitoring parking slot availability in real time. Built as a learning project to explore IoT, backend development, and real-time data.
+I built this because I got tired of circling parking lots looking for a spot. Then I thought — wait, I'm a CS student, I should be able to fix this. So I wired up an ESP32 with ultrasonic sensors, hooked it to a dashboard, and ParkX was born.
 
-## What It Does
-- Reads sensor data from an ESP32 microcontroller connected to ultrasonic sensors
-- Sends data to the cloud using Blynk IoT platform
-- Displays real-time parking slot status on a web dashboard
-- Includes a basic booking system and chatbot (experimental)
+**Notable late-night debugging sessions:** 3 (and counting).
 
-## What I Learned
-- How to write Arduino firmware for ESP32
-- How to build a REST API with FastAPI
-- How to integrate IoT devices with a web backend
-- How to create a real-time dashboard with Chart.js
-- Database design with SQLite
+## What it does
 
-## Tech Stack
-- **Backend:** FastAPI (Python)
-- **Hardware:** ESP32, ultrasonic sensors
-- **IoT:** Blynk Cloud
-- **Frontend:** HTML, CSS, JavaScript, Chart.js
-- **Database:** SQLite
+- Ultrasonic sensors (connected to ESP32) detect if a parking slot is occupied
+- Data flows through Blynk IoT cloud to a FastAPI backend
+- A web dashboard shows real-time slot status — green = free, red = taken
+- Has a basic booking system and an experimental chatbot (still working on making it useful)
 
-## How to Run
-1. Install dependencies: pip install -r requirements.txt
-2. Configure your Blynk token in backend.py
-3. Run: python backend.py
-4. Open the dashboard in your browser
+## Tech stuff
 
-## Project Structure
-backend.py — Main FastAPI server
-parking_backend/ — Backend modules (AI, Blynk, database, routes)
-frontend/ — Web dashboard files
-smart_parking_v2/ — ESP32 Arduino firmware
+| Layer | What I used |
+|-------|-------------|
+| Backend | FastAPI (Python) |
+| Hardware | ESP32 + ultrasonic sensors |
+| IoT | Blynk Cloud |
+| Frontend | HTML, CSS, JavaScript, Chart.js |
+| Database | SQLite |
+
+## What I learned (the hard way)
+
+- ESP32 firmware is finicky. One wrong pin assignment and you spend an hour debugging.
+- Real-time data with WebSockets is not as straightforward as tutorials make it seem.
+- Chart.js is great until you try to do something slightly unusual.
+- IoT + web == way more moving parts than I expected. But also way more satisfying when it works.
+
+## How to run it yourself
+
+```bash
+pip install -r requirements.txt
+# Set your Blynk token in backend.py
+python backend.py
+# Open the dashboard URL in your browser
+```
+
+## Project layout
+
+```
+backend.py              — Main FastAPI server
+parking_backend/        — Backend modules (AI, Blynk, database, routes)
+frontend/               — Dashboard HTML/CSS/JS
+smart_parking_v2/       — ESP32 Arduino firmware
+```
+
+## License
+
+MIT — go ahead, fork it, break it, fix it.

@@ -1,5 +1,8 @@
 # ParkX — Smart Parking Dashboard
 
+[![CI](https://img.shields.io/github/actions/workflow/status/Praansu/ParkX/ci.yml?style=flat-square&label=CI)](https://github.com/Praansu/ParkX/actions)
+[![License](https://img.shields.io/github/license/Praansu/ParkX?style=flat-square)](LICENSE)
+
 I built this because I got tired of circling parking lots looking for a spot. Then I thought — wait, I'm a CS student, I should be able to fix this. So I wired up an ESP32 with ultrasonic sensors, hooked it to a dashboard, and ParkX was born.
 
 **Notable late-night debugging sessions:** 3 (and counting).

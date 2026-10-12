@@ -41,10 +41,34 @@ FastAPI app (`main.py`, lifespan-managed). Two background loops start with the s
 | `/chat` | POST | Parking chatbot (see below) |
 | `/analytics` | GET | Occupancy aggregates for the dashboard charts |
 | `/predict` | GET | Demand outlook served to the dashboard |
-| `/alerts` | GET | Anomaly alerts, latest first |
+| `/alerts` | GET | Anomaly alerts, latest first (operator key) |
 | `/anpr` | GET / POST | Number-plate endpoint — disabled stub unless an ESP32-CAM is attached |
 
+Operator endpoints (`/bookings` list, cancel, `/simulate`, `/alerts`) need an
+`X-API-Key` header. Roles: owner (everything) vs attendant (bookings + alerts).
+Set `ADMIN_API_KEY` once, restart, then remove it — the key hash lives in the DB.
+
 The chatbot (`ai.py`) tries local Ollama first (`llama3.2:3b`), falls back to Groq (`llama-3.1-8b-instant`). It parses fuzzy dates ("tomorrow", "next Monday") into real dates, checks live bay state and existing bookings before answering, and quotes prices. It works well for booking questions; anything outside parking, it will happily make up — that's on the TODO list to constrain.
+
+## Payments (Khalti / eSewa / test mode)
+
+Bookings carry a `payment_status` driven by a strict state machine
+(`UNPAID → PENDING → PAID | FAILED`, `PAID → REFUNDED`). A booking is never
+marked PAID from a client callback — only server-side verification flips it.
+
+| Endpoint | Method | What it does |
+|----------|--------|-------------|
+| `/payments/initiate` | POST | Start a payment for a booking → returns gateway pay URL |
+| `/payments/status/{txn}` | GET | Server-side verification poll (the only path to PAID) |
+| `/payments/esewa/callback` | POST | eSewa signed redirect handler (HMAC-verified) |
+| `/payments/test/settle/{txn}` | POST | Test-mode only, owner key: flip a simulated payment to PAID |
+
+Without gateway keys everything runs on the built-in simulator: create a
+booking, initiate payment, settle it, watch the status flip — no real money,
+no secrets. Khalti (REST: initiate → `pidx` → lookup) and eSewa (HMAC-signed
+form + signed callback) plug in via the same gateway interface once you hold
+merchant credentials (registered company + PAN). See `parking_backend/payments.py`
+and `STARTUP.md` for the full picture. Tests live in `tests/` (`pytest -q`).
 
 ## Run it
 
@@ -77,8 +101,11 @@ parking_backend/
   routes.py             — all API endpoints
   blynk.py              — Blynk polling + anomaly detection
   ai.py                 — chatbot (Ollama → Groq fallback)
-  database.py           — SQLite: events, alerts, bookings
+  payments.py           — gateway interface (Khalti / eSewa / test) + state machine
+  auth.py               — operator API keys (owner / attendant roles)
+  database.py           — SQLite: events, alerts, bookings, payments, operators
   config.py             — env-driven settings
+tests/                  — pytest: payments state machine, gateways, auth
 frontend/               — dashboard (index.html, app.js, style.css)
 smart_parking_v2/       — ESP32 firmware (.ino + config.h.example)
 ```

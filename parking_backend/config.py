@@ -28,14 +28,26 @@ ALERT_EMAIL_TO = os.getenv("ALERT_EMAIL_TO", "")
 # Parking prices in NPR
 PRICES = {1: 50, 2: 90, 3: 130, 4: 160, 8: 280}
 
+
 def get_price(hours: int) -> int:
     return PRICES.get(hours, 50)
+
 
 # Anomaly detection thresholds
 ANOMALY_SLOT_HOURS = 6
 ANOMALY_FULL_MINUTES = 60
 ANOMALY_OFFLINE_MINS = 5
 ANOMALY_CHECK_INTERVAL = 60
+
+# Payments — test mode until merchant credentials exist
+PAYMENTS_MODE = os.getenv("PAYMENTS_MODE", "test").lower()
+PAYMENTS_GATEWAY = os.getenv("PAYMENTS_GATEWAY", "test").lower()
+KHALTI_SECRET_KEY = os.getenv("KHALTI_SECRET_KEY", "")
+KHALTI_BASE = os.getenv("KHALTI_BASE", "https://dev.khalti.com")
+KHALTI_PROD = "https://khalti.com"
+ESEWA_MERCHANT_CODE = os.getenv("ESEWA_MERCHANT_CODE", "")
+ESEWA_SECRET_KEY = os.getenv("ESEWA_SECRET_KEY", "")
+ESEWA_SANDBOX = os.getenv("ESEWA_SANDBOX", "true").lower() == "true"
 
 # ANPR — flip to True only with an ESP32-CAM
 ANPR_ENABLED = False

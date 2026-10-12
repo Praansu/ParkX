@@ -7,18 +7,22 @@ from fastapi.staticfiles import StaticFiles
 import parking_backend.config as config
 import parking_backend.database as db
 import parking_backend.blynk as blynk
+from parking_backend.auth import seed_admin_from_env
 from parking_backend.routes import router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db.init_db()
+    seed_admin_from_env()
 
     poll_task = asyncio.create_task(blynk.poll_loop())
     anomaly_task = asyncio.create_task(blynk.anomaly_loop())
 
     print(f"[ParkX] Running on http://localhost:{config.PORT}")
-    print(f"[ParkX] Polling Blynk every {config.POLL_INTERVAL}s | Anomaly check every {config.ANOMALY_CHECK_INTERVAL}s")
+    print(
+        f"[ParkX] Polling Blynk every {config.POLL_INTERVAL}s | Anomaly check every {config.ANOMALY_CHECK_INTERVAL}s"
+    )
 
     yield
 
@@ -34,7 +38,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
 app.include_router(router)

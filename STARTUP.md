@@ -76,12 +76,12 @@ multi-lot support (code currently models exactly 3 bays).
 ## Technical roadmap (maps to code)
 
 - [x] Single-lot system: firmware, backend, dashboard, bookings, chatbot
-- [ ] **Payments module** — gateway interface + Khalti implementation + test-mode
-  simulator; booking `PAID/UNPAID` states (Phase 2)
+- [x] **Payments module** — gateway interface + Khalti implementation + test-mode
+  simulator; booking `PAID/UNPAID` states (shipped; eSewa live needs merchant creds)
 - [ ] **Multi-lot data model** — `lots` + `slots` tables replacing hardcoded 3
   bays; per-lot pricing and dashboards (Phase 3)
-- [ ] **Accounts & roles** — lot owners, attendants, drivers; booking IDs stop
-  being guessable (Phase 3)
+- [x] **Accounts & roles** — owner/attendant API keys; operator endpoints guarded
+  (shipped; drivers stay keyless)
 - [ ] Reduce Blynk dependence — direct MQTT/Wi-Fi reporting as an option for
   lots with reliable internet (later)
 - [ ] Nepali-language UI toggle (real adoption driver outside central Kathmandu)

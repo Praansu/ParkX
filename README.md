@@ -30,13 +30,14 @@ To flash it: copy `config.h.example` to `config.h`, put in your WiFi credentials
 
 ## Backend (`parking_backend/`)
 
-FastAPI app (`main.py`, lifespan-managed). Two background loops start with the server: a Blynk poll loop and an anomaly loop (flags a bay stuck occupied 6+ hours, a lot full 60+ minutes, or a sensor offline 5+ minutes). SQLite tables: `events`, `alerts`, `bookings`.
+FastAPI app (`main.py`, lifespan-managed). Two background loops start with the server: a Blynk poll loop and an anomaly loop (flags a bay stuck occupied 6+ hours, a lot full 60+ minutes, or a sensor offline 5+ minutes). SQLite tables: `events`, `alerts`, `bookings`, plus `lots`, `slots`, `payments`, `operators`.
 
 | Endpoint | Method | What it does |
 |----------|--------|-------------|
-| `/status` | GET | Live bay state, free count, gate |
+| `/status` | GET | Live bay state, free count, gate (`?lot_id=` for other lots) |
 | `/simulate` | POST | Fake a sensor reading — demo without hardware |
-| `/bookings` | GET / POST | List / create bookings (NPR pricing: 1h 50, 2h 90, 3h 130, 4h 160, 8h 280) |
+| `/bookings` | GET / POST | List (optional `?lot_id=`) / create bookings with per-lot pricing |
+| `/lots` | GET / POST | List lots (attendant) / create a lot with slot count + pricing (owner) |
 | `/bookings/{id}/cancel` | POST | Cancel a booking |
 | `/chat` | POST | Parking chatbot (see below) |
 | `/analytics` | GET | Occupancy aggregates for the dashboard charts |
@@ -80,7 +81,7 @@ python backend.py           # dashboard at http://localhost:8000
 
 # 2. No hardware? Use the simulator
 # open the dashboard and hit "Simulate", or:
-curl -X POST http://localhost:8000/simulate -H "Content-Type: application/json" -d '{"slot": 1}'
+curl -X POST http://localhost:8000/api/simulate -H "Content-Type: application/json" -d '{"action": "fill"}'
 ```
 
 Optional extras in `.env`: `OLLAMA_*` / `GROQ_*` for the chatbot, Gmail app-password settings for email alerts, `DB_PATH`, `PORT`.
@@ -90,7 +91,7 @@ Optional extras in `.env`: `OLLAMA_*` / `GROQ_*` for the chatbot, Gmail app-pass
 - ANPR is a stub (`ANPR_ENABLED = False`, OCR deps commented out of requirements). Real plate recognition needs an ESP32-CAM plus `easyocr`/`pillow` on the server.
 - Email alerts need a Gmail app password; without one they're silently skipped.
 - The chatbot has no guardrails outside the parking domain.
-- One lot, three bays. Multi-lot support would mean a `lots` table and scoped queries — the schema isn't there yet.
+- Multi-lot backend is done (`lots` + `slots` tables, per-lot pricing, `/lots` CRUD) but the dashboard and ESP32 kits still speak the 3-bay default lot — analytics reports `tracked_bays` coverage honestly for bigger lots. Frontend multi-lot picker + N-bay firmware variants are the next build.
 
 ## Layout
 
@@ -103,9 +104,9 @@ parking_backend/
   ai.py                 — chatbot (Ollama → Groq fallback)
   payments.py           — gateway interface (Khalti / eSewa / test) + state machine
   auth.py               — operator API keys (owner / attendant roles)
-  database.py           — SQLite: events, alerts, bookings, payments, operators
+  database.py           — SQLite: events, alerts, bookings, payments, operators, lots, slots
   config.py             — env-driven settings
-tests/                  — pytest: payments state machine, gateways, auth
+tests/                  — pytest: payments state machine, gateways, auth, multi-lot
 frontend/               — dashboard (index.html, app.js, style.css)
 smart_parking_v2/       — ESP32 firmware (.ino + config.h.example)
 ```

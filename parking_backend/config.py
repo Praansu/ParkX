@@ -4,6 +4,8 @@ import os
 BLYNK_TOKEN = os.getenv("BLYNK_TOKEN", "your_blynk_token_here")
 BLYNK_BASE = os.getenv("BLYNK_BASE", "https://blynk.cloud/external/api")
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "2"))
+# Which lot the legacy env BLYNK_TOKEN belongs to (default lot id).
+LOT_ID = os.getenv("LOT_ID", "main")
 
 # AI backends — tries Ollama first, falls back to Groq
 OLLAMA_ACTIVE = os.getenv("OLLAMA_ACTIVE", "true").lower() == "true"

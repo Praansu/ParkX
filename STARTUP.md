@@ -26,8 +26,9 @@ A lot-owner dashboard + driver booking page + cheap ESP32 sensor kit:
    gate + LCD, installed per lot. Backend polls sensor state; dashboard
    refreshes on a 2-second tick (proven sufficient — no WebSocket needed).
 
-What exists today: everything above *except* online payment collection and
-multi-lot support (code currently models exactly 3 bays).
+What exists today: everything above *except* online payment collection.
+Multi-lot backend support is done (`lots`/`slots` tables, per-lot pricing,
+`/lots` CRUD) — dashboard and firmware still target the 3-bay default lot.
 
 ## Who pays
 
@@ -78,8 +79,10 @@ multi-lot support (code currently models exactly 3 bays).
 - [x] Single-lot system: firmware, backend, dashboard, bookings, chatbot
 - [x] **Payments module** — gateway interface + Khalti implementation + test-mode
   simulator; booking `PAID/UNPAID` states (shipped; eSewa live needs merchant creds)
-- [ ] **Multi-lot data model** — `lots` + `slots` tables replacing hardcoded 3
-  bays; per-lot pricing and dashboards (Phase 3)
+- [x] **Multi-lot data model** — `lots` + `slots` tables, per-lot pricing,
+  `/lots` CRUD, lot-scoped bookings/analytics/chat (shipped; dashboard and
+  firmware still target the default 3-bay lot — multi-lot picker + N-bay
+  firmware variants are next)
 - [x] **Accounts & roles** — owner/attendant API keys; operator endpoints guarded
   (shipped; drivers stay keyless)
 - [ ] Reduce Blynk dependence — direct MQTT/Wi-Fi reporting as an option for

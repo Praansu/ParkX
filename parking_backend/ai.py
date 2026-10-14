@@ -7,9 +7,15 @@ from typing import Optional
 import httpx
 
 from parking_backend.config import (
-    OLLAMA_ACTIVE, OLLAMA_BASE, OLLAMA_MODEL,
-    GROQ_ACTIVE, GROQ_API_BASE, GROQ_API_KEY, GROQ_MODEL,
-    OLLAMA_TIMEOUT, get_price
+    OLLAMA_ACTIVE,
+    OLLAMA_BASE,
+    OLLAMA_MODEL,
+    GROQ_ACTIVE,
+    GROQ_API_BASE,
+    GROQ_API_KEY,
+    GROQ_MODEL,
+    OLLAMA_TIMEOUT,
+    get_price,
 )
 import parking_backend.database as pdb
 import parking_backend.blynk as blynk
@@ -22,8 +28,10 @@ _ollama_available: Optional[bool] = None
 def _today():
     return datetime.now().date().isoformat()
 
+
 def _tomorrow():
     return (datetime.now().date() + timedelta(days=1)).isoformat()
+
 
 def _now():
     return datetime.now().strftime("%H:%M")
@@ -34,45 +42,79 @@ def replace_fuzzy_dates(text: str) -> str:
     now = datetime.now()
     text = re.sub(r"\btoday\b", _today(), text, flags=re.IGNORECASE)
     text = re.sub(r"\btomorrow\b", _tomorrow(), text, flags=re.IGNORECASE)
-    text = re.sub(r"\bday after tomorrow\b",
-                  (now + timedelta(days=2)).date().isoformat(),
-                  text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"\bday after tomorrow\b",
+        (now + timedelta(days=2)).date().isoformat(),
+        text,
+        flags=re.IGNORECASE,
+    )
 
-    days = {"monday":0,"tuesday":1,"wednesday":2,"thursday":3,
-            "friday":4,"saturday":5,"sunday":6}
+    days = {
+        "monday": 0,
+        "tuesday": 1,
+        "wednesday": 2,
+        "thursday": 3,
+        "friday": 4,
+        "saturday": 5,
+        "sunday": 6,
+    }
+
     def _next(m):
         t = days[m.group(1).lower()]
         a = (t - now.weekday() - 1) % 7 + 1
         return (now + timedelta(days=a)).date().isoformat()
-    text = re.sub(r"\bnext\s+(mon|tue|wed|thu|fri|sat|sun)[^\s]*", _next, text, flags=re.IGNORECASE)
+
+    text = re.sub(
+        r"\bnext\s+(mon|tue|wed|thu|fri|sat|sun)[^\s]*",
+        _next,
+        text,
+        flags=re.IGNORECASE,
+    )
     return text
 
 
-def check_slot_availability(slot: int, date_str: str, time_str: str, dur: int) -> bool:
+def _lot_slot_count(lot_id: str) -> int:
+    """Slot count for a lot, defaulting to 3 when unknown. The dashboard and
+    chatbot speak about the lot the operator sees (the default lot)."""
+    try:
+        lot = pdb.get_lot(lot_id)
+        return max(1, int((lot or {}).get("slot_count") or 3))
+    except (TypeError, ValueError):
+        return 3
+
+
+def check_slot_availability(
+    slot: int, date_str: str, time_str: str, dur: int, lot_id: str = "main"
+) -> bool:
     try:
         start = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
         end = start + timedelta(hours=dur)
     except ValueError:
         return False
     with get_connection() as conn:
-        cnt = conn.execute("""
+        cnt = conn.execute(
+            """
             SELECT COUNT(*) n FROM bookings
-            WHERE slot = ? AND status = 'UPCOMING'
+            WHERE slot = ? AND lot_id = ? AND status = 'UPCOMING'
               AND datetime(date || ' ' || time) < datetime(?, ?, '+' || dur || ' hours')
               AND datetime(?, ?, '+' || ? || ' hours') > datetime(date || ' ' || time)
-        """, (slot, date_str, time_str, date_str, time_str, dur)).fetchone()
+        """,
+            (slot, lot_id, date_str, time_str, date_str, time_str, dur),
+        ).fetchone()
     return cnt["n"] == 0
 
 
-def find_available_slots(date_str: str, time_str: str, dur: int) -> list[int]:
+def find_available_slots(
+    date_str: str, time_str: str, dur: int, lot_id: str = "main"
+) -> list[int]:
     free = []
-    for s in (1, 2, 3):
-        if check_slot_availability(s, date_str, time_str, dur):
+    for s in range(1, _lot_slot_count(lot_id) + 1):
+        if check_slot_availability(s, date_str, time_str, dur, lot_id):
             free.append(s)
     return free
 
 
-SYSTEM_PROMPT = """You are the chatbot for ParkX, a smart parking system (3 slots).
+SYSTEM_PROMPT = """You are the chatbot for ParkX, a smart parking system ({slot_count} slots on the default lot).
 Help users check availability, book spots, cancel, or see history.
 
 Current status: {status_summary}
@@ -117,12 +159,24 @@ def run_ai_command(call: str) -> str:
             if not check_slot_availability(s, d, t, dur):
                 return f"Slot {s} not available on {d} at {t} for {dur}h."
             bid = f"BK-{secrets.token_hex(4).upper()}"
-            pdb.add_booking({
-                "id": bid, "slot": s, "date": d, "time": t, "dur": dur,
-                "name": name, "plate": plate.upper(), "amount": get_price(dur), "status": "UPCOMING"
-            })
+            pdb.add_booking(
+                {
+                    "id": bid,
+                    "lot_id": "main",
+                    "slot": s,
+                    "date": d,
+                    "time": t,
+                    "dur": dur,
+                    "name": name,
+                    "plate": plate.upper(),
+                    "amount": get_price(dur),
+                    "status": "UPCOMING",
+                }
+            )
             blynk.trigger_blynk_resync()
-            return f"Booked {bid}: Slot {s} on {d} at {t} ({dur}h). Rs {get_price(dur)}."
+            return (
+                f"Booked {bid}: Slot {s} on {d} at {t} ({dur}h). Rs {get_price(dur)}."
+            )
 
         elif fn == "cancel_booking":
             bid = args[0].strip().upper()
@@ -168,8 +222,10 @@ async def _ask_ollama(messages):
         return None
     try:
         async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as c:
-            r = await c.post(f"{OLLAMA_BASE}/api/chat",
-                json={"model": OLLAMA_MODEL, "messages": messages, "stream": False})
+            r = await c.post(
+                f"{OLLAMA_BASE}/api/chat",
+                json={"model": OLLAMA_MODEL, "messages": messages, "stream": False},
+            )
             if r.status_code == 200:
                 return r.json().get("message", {}).get("content", "")
             print(f"[OLLAMA] HTTP {r.status_code}")
@@ -182,13 +238,23 @@ async def _ask_groq(messages):
     if not GROQ_ACTIVE:
         return None
     try:
-        headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Content-Type": "application/json",
+        }
         async with httpx.AsyncClient(timeout=15.0) as c:
-            r = await c.post(f"{GROQ_API_BASE}/chat/completions",
+            r = await c.post(
+                f"{GROQ_API_BASE}/chat/completions",
                 json={"model": GROQ_MODEL, "messages": messages, "max_tokens": 500},
-                headers=headers)
+                headers=headers,
+            )
             if r.status_code == 200:
-                return r.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+                return (
+                    r.json()
+                    .get("choices", [{}])[0]
+                    .get("message", {})
+                    .get("content", "")
+                )
             print(f"[GROQ] HTTP {r.status_code}")
     except Exception as e:
         print(f"[GROQ ERROR] {e}")
@@ -198,26 +264,42 @@ async def _ask_groq(messages):
 def summarize() -> str:
     s = blynk_state
     free = s["slot1"] + s["slot2"] + s["slot3"]
-    parts = [f"slot{i}={ 'Empty' if s[f'slot{i}'] == 1 else 'Occupied' }" for i in range(1, 4)]
+    parts = [
+        f"slot{i}={'Empty' if s[f'slot{i}'] == 1 else 'Occupied'}" for i in range(1, 4)
+    ]
     return f"{' | '.join(parts)} | Free: {free}/3 | Online: {s['online']} | Gate: {'Open' if s['gate'] else 'Closed'}"
 
 
 async def agent_chat(msg: str, history: list[dict]) -> dict:
     msg = replace_fuzzy_dates(msg)
-    msgs = [{"role": "system", "content": SYSTEM_PROMPT.format(status_summary=summarize())}]
+    msgs = [
+        {
+            "role": "system",
+            "content": SYSTEM_PROMPT.format(
+                status_summary=summarize(), slot_count=_lot_slot_count("main")
+            ),
+        }
+    ]
     for h in history[-6:]:
-        msgs.append({"role": "user" if h.get("role") == "user" else "assistant", "content": h.get("content", "")})
+        msgs.append(
+            {
+                "role": "user" if h.get("role") == "user" else "assistant",
+                "content": h.get("content", ""),
+            }
+        )
     msgs.append({"role": "user", "content": msg})
 
     reply, source = None, "none"
 
     if is_ollama_ready():
         reply = await _ask_ollama(msgs)
-        if reply: source = "ollama"
+        if reply:
+            source = "ollama"
 
     if not reply:
         reply = await _ask_groq(msgs)
-        if reply: source = "groq"
+        if reply:
+            source = "groq"
 
     if not reply:
         source = "rule"
@@ -229,7 +311,12 @@ async def agent_chat(msg: str, history: list[dict]) -> dict:
             results = [run_ai_command(c) for c in calls]
             joined = "\n".join(results)
             msgs.append({"role": "assistant", "content": reply})
-            msgs.append({"role": "user", "content": f"Function results:\n{joined}\nRespond nicely."})
+            msgs.append(
+                {
+                    "role": "user",
+                    "content": f"Function results:\n{joined}\nRespond nicely.",
+                }
+            )
 
             if source == "ollama":
                 reply = await _ask_ollama(msgs) or joined
@@ -241,7 +328,11 @@ async def agent_chat(msg: str, history: list[dict]) -> dict:
             reply = f"Error: {e}"
 
     reply = re.sub(r"CALL:\s*\w+\([^)]+\)", "", reply or "").strip()
-    return {"reply": reply or "I didn't understand that. Try asking about booking or availability.", "source": source}
+    return {
+        "reply": reply
+        or "I didn't understand that. Try asking about booking or availability.",
+        "source": source,
+    }
 
 
 def _fallback(msg: str) -> str:
@@ -253,7 +344,10 @@ def _fallback(msg: str) -> str:
         return "Namaste! All full right now, but I can book ahead."
 
     if re.search(r"\b(how many|free|available|status|open|empty)\b", m):
-        parts = [f"Slot {i}: {'Empty' if blynk_state[f'slot{i}'] == 1 else 'Occupied'}" for i in range(1, 4)]
+        parts = [
+            f"Slot {i}: {'Empty' if blynk_state[f'slot{i}'] == 1 else 'Occupied'}"
+            for i in range(1, 4)
+        ]
         free = blynk_state["slot1"] + blynk_state["slot2"] + blynk_state["slot3"]
         return f"{' | '.join(parts)} — {free}/3 free."
 
@@ -267,7 +361,9 @@ def _fallback(msg: str) -> str:
     if re.search(r"\b(book|reserve|park)\b", m):
         free = find_available_slots(_today(), _now(), 1)
         if free:
-            return f"Slots {free} free now. Tell me date, time, duration, name, and plate!"
+            return (
+                f"Slots {free} free now. Tell me date, time, duration, name, and plate!"
+            )
         return "Tell me date, time, duration, name, and plate."
 
     if re.search(r"\b(cancel)\b", m):
@@ -285,6 +381,9 @@ def _fallback(msg: str) -> str:
         bks = pdb.get_bookings()
         if not bks:
             return "No reservations yet."
-        return "\n".join(f"  {b['id']}: Slot {b['slot']} {b['date']} {b['time']} {b['dur']}h — {b['status']}" for b in bks)
+        return "\n".join(
+            f"  {b['id']}: Slot {b['slot']} {b['date']} {b['time']} {b['dur']}h — {b['status']}"
+            for b in bks
+        )
 
     return "I can help with: availability, booking, cancel, history. What do you need?"

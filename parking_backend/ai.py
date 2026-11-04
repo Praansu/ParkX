@@ -270,8 +270,65 @@ def summarize() -> str:
     return f"{' | '.join(parts)} | Free: {free}/3 | Online: {s['online']} | Gate: {'Open' if s['gate'] else 'Closed'}"
 
 
+def is_parking_related(msg: str) -> bool:
+    """Return True if the message is about parking (availability, booking,
+    cancel, history, status, slots) or a greeting/help opener. Anything else
+    (e.g. 'capital of France', 'write python code') should not reach the LLM
+    so it cannot hallucinate answers outside the parking domain."""
+    m = msg.lower()
+    parking_keywords = [
+        "slot",
+        "spot",
+        "space",
+        "park",
+        "booking",
+        "book",
+        "reserve",
+        "cancel",
+        "available",
+        "availability",
+        "free",
+        "empty",
+        "occupied",
+        "status",
+        "history",
+        "my bookings",
+        "lot",
+        "bay",
+        "duration",
+        "name",
+        "plate",
+        "time",
+        "date",
+        "today",
+        "tomorrow",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+        "hour",
+        "bk-",
+        "hi",
+        "hello",
+        "hey",
+        "namaste",
+        "help",
+        "what can",
+    ]
+    return any(kw in m for kw in parking_keywords)
+
+
 async def agent_chat(msg: str, history: list[dict]) -> dict:
     msg = replace_fuzzy_dates(msg)
+
+    # Guardrail: never send off-topic messages to the LLM. If it's not about
+    # parking, route straight to the rule-based fallback so we don't hallucinate.
+    if not is_parking_related(msg):
+        return {"reply": _fallback(msg), "source": "guardrail"}
+
     msgs = [
         {
             "role": "system",

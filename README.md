@@ -1,8 +1,13 @@
 # ParkX
 
-Smart parking across three layers: ESP32 sensor firmware, a FastAPI backend, and a dashboard served by the same backend. I got tired of circling parking lots, and I wanted to feel what an IoT project with real moving parts is like.
-
 [![CI](https://img.shields.io/github/actions/workflow/status/Praansu/ParkX/ci.yml?style=flat-square)](https://github.com/Praansu/ParkX/actions)
+[![License](https://img.shields.io/badge/License-MIT-1F2328?style=flat-square)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.10+-1F2328?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-1F2328?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![ESP32](https://img.shields.io/badge/ESP32-firmware-1F2328?style=flat-square&logo=espressif&logoColor=white)](https://espressif.com)
+[![Docker](https://img.shields.io/badge/Docker-ready-1F2328?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
+
+Smart parking across three layers: **ESP32 sensor firmware**, a **FastAPI backend**, and a **dashboard** served by the same backend. I got tired of circling parking lots, and I wanted to feel what an IoT project with real moving parts is like.
 
 ## How it works
 
@@ -45,17 +50,13 @@ FastAPI app (`main.py`, lifespan-managed). Two background loops start with the s
 | `/alerts` | GET | Anomaly alerts, latest first (operator key) |
 | `/anpr` | GET / POST | Number-plate endpoint — disabled stub unless an ESP32-CAM is attached |
 
-Operator endpoints (`/bookings` list, cancel, `/simulate`, `/alerts`) need an
-`X-API-Key` header. Roles: owner (everything) vs attendant (bookings + alerts).
-Set `ADMIN_API_KEY` once, restart, then remove it — the key hash lives in the DB.
+Operator endpoints (`/bookings` list, cancel, `/simulate`, `/alerts`) need an `X-API-Key` header. Roles: owner (everything) vs attendant (bookings + alerts). Set `ADMIN_API_KEY` once, restart, then remove it — the key hash lives in the DB.
 
 The chatbot (`ai.py`) tries local Ollama first (`llama3.2:3b`), falls back to Groq (`llama-3.1-8b-instant`). It parses fuzzy dates ("tomorrow", "next Monday") into real dates, checks live bay state and existing bookings before answering, and quotes prices. It works well for booking questions; anything outside parking, it will happily make up — that's on the TODO list to constrain.
 
 ## Payments (Khalti / eSewa / test mode)
 
-Bookings carry a `payment_status` driven by a strict state machine
-(`UNPAID → PENDING → PAID | FAILED`, `PAID → REFUNDED`). A booking is never
-marked PAID from a client callback — only server-side verification flips it.
+Bookings carry a `payment_status` driven by a strict state machine (`UNPAID → PENDING → PAID | FAILED`, `PAID → REFUNDED`). A booking is never marked PAID from a client callback — only server-side verification flips it.
 
 | Endpoint | Method | What it does |
 |----------|--------|-------------|
@@ -64,14 +65,9 @@ marked PAID from a client callback — only server-side verification flips it.
 | `/payments/esewa/callback` | POST | eSewa signed redirect handler (HMAC-verified) |
 | `/payments/test/settle/{txn}` | POST | Test-mode only, owner key: flip a simulated payment to PAID |
 
-Without gateway keys everything runs on the built-in simulator: create a
-booking, initiate payment, settle it, watch the status flip — no real money,
-no secrets. Khalti (REST: initiate → `pidx` → lookup) and eSewa (HMAC-signed
-form + signed callback) plug in via the same gateway interface once you hold
-merchant credentials (registered company + PAN). See `parking_backend/payments.py`
-and `STARTUP.md` for the full picture. Tests live in `tests/` (`pytest -q`).
+Without gateway keys everything runs on the built-in simulator: create a booking, initiate payment, settle it, watch the status flip — no real money, no secrets. Khalti (REST: initiate → `pidx` → lookup) and eSewa (HMAC-signed form + signed callback) plug in via the same gateway interface once you hold merchant credentials (registered company + PAN). See `parking_backend/payments.py` and `STARTUP.md` for the full picture. Tests live in `tests/` (`pytest -q`).
 
-## Run it
+## Quick Start
 
 ```bash
 # 1. Backend
@@ -93,7 +89,7 @@ Optional extras in `.env`: `OLLAMA_*` / `GROQ_*` for the chatbot, Gmail app-pass
 - The chatbot has no guardrails outside the parking domain.
 - Multi-lot backend is done (`lots` + `slots` tables, per-lot pricing, `/lots` CRUD) but the dashboard and ESP32 kits still speak the 3-bay default lot — analytics reports `tracked_bays` coverage honestly for bigger lots. Frontend multi-lot picker + N-bay firmware variants are the next build.
 
-## Layout
+## Project Layout
 
 ```
 backend.py              — launcher (loads .env, starts uvicorn)
@@ -111,6 +107,10 @@ frontend/               — dashboard (index.html, app.js, style.css)
 smart_parking_v2/       — ESP32 firmware (.ino + config.h.example)
 ```
 
-## What I learned
+## What I Learned
 
 ESP32 firmware is finicky — one wrong pin is an hour of debugging. Polling beats WebSockets when the data changes this slowly; I started wanting sockets and dropped them once I did the math (2-second car-park state doesn't need a persistent connection). IoT + web is far more moving parts than a pure software project, and far more satisfying when the gate actually opens.
+
+## License
+
+MIT — use it, break it, improve it.

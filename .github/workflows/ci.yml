@@ -38,7 +38,7 @@ jobs:
 
       - name: Check imports resolve
         run: |
-          python -c "from parking_backend.main import app; from parking_backend.blynk import poll_loop, anomaly_loop; from parking_backend.ai import chat; print('All imports OK')"
+          python -c "from parking_backend.main import app; from parking_backend.blynk import poll_loop, anomaly_loop; from parking_backend.ai import agent_chat; print('All imports OK')"
 
   docker-build:
     runs-on: ubuntu-latest

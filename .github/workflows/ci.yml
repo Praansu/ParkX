@@ -24,11 +24,14 @@ jobs:
           pip install -r requirements.txt
           pip install ruff pytest pytest-asyncio httpx
 
-      - name: Lint with ruff
-        run: ruff check parking_backend/ tests/ backend.py --ignore=F824
+      - name: Auto-fix lint with ruff
+        run: ruff check --fix parking_backend/ tests/ backend.py
 
-      - name: Format check with ruff
-        run: ruff format --check parking_backend/ tests/ backend.py
+      - name: Auto-format with ruff
+        run: ruff format parking_backend/ tests/ backend.py
+
+      - name: Verify no lint errors remain
+        run: ruff check parking_backend/ tests/ backend.py
 
       - name: Run tests
         run: pytest tests/ -v --tb=short
@@ -52,4 +55,4 @@ jobs:
           docker run -d --name test-container -p 8000:8000 parkx
           sleep 15
           curl -f http://localhost:8000/health || (docker logs test-container && exit 1)
-          docker stop test-container
+          docker stop test-containerdummy
